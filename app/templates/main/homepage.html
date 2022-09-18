@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}
+    {{super()}}
+    Homepage
+{% endblock title%}
+
+{% block page_content %}
+<div>
+	<h3><span style = "color : green;">Welcome | Karibu</span> {{app_name}}</h3>
+	<div class = 'list-group'>
+		<span class = 'list-group-item'>
+			<h4 style = "color : deeppink;">A Personalized Antenatal Care is Your Right</h4>
+			<p>
+			Learn from skilled health personnel about healthy behaviours during pregnancy, better 
+			understand warning signs during pregnancy and childbirth, and receive social, emotional 
+			and psychological support at this critical phase in your lives.
+			</p>
+			<p>
+			Through antenatal care, you can also access micronutrient supplementation, treatment for 
+			hypertension to prevent eclampsia, as well as immunization against tetanus. Antenatal care 
+			can also provide HIV testing and medications to prevent mother-to-child transmission of HIV.
+			</p>
+			<blockquote>
+				<p>
+				A good future for your unborn baby is determined by an excellent antenatal care program.
+				</p>
+			</blockquote>
+			<p>
+			Join us today to have the best experience as we anticipate the arrival for our new friend 
+			into the family
+			</p>
+			<div class = 'list-group'>
+				<a href = '' class = 'list-group-item active'>
+					<h4 class = 'list-group-item-header'>
+						Click here to join us today
+					</h4>
+				</a>
+			</div>
+		</span>
+	</div>
+	<img class = "img-rounded" style = "width : 100%; height = auto;" src = "{{url_for('static', filename = 'maternal.webp')}}">
+</div>
+{% endblock page_content %}
