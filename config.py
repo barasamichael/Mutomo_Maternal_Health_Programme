@@ -21,9 +21,9 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     ORGANISATION_NAME = os.environ.get('ORGANISATION_NAME') or 'Mutomo Maternal Health Programme'
     
-    FLASKY_ITEMS_PER_PAGE = os.environ.get('FLASKY_ITEMS_PER_PAGE') or 12
+    FLASKY_POSTS_PER_PAGE = os.environ.get('FLASKY_POSTS_PER_PAGE') or 12
 
-    GROUP_UPLOAD_PATH = os.path.join(basedir + '/app/static/profiles/groups')
+    PATIENT_UPLOAD_PATH = os.path.join(basedir + '/app/static/profiles/patients')
     UPLOAD_EXTENSIONS = ['.jpg', '.gif', '.jpeg', '.png']
 
 

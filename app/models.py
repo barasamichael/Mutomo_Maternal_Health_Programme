@@ -305,7 +305,7 @@ class patient(db.Model):
     social_histories = db.relationship('social_history', backref = 'patient', 
             lazy = 'dynamic')
     next_of_kins = db.relationship('next_of_kin', backref = 'patient', lazy = 'dynamic')
-    documents = db.relationship('document', backref = 'patient', lazy = 'dynamic')
+    documents = db.relationship('patient_document', backref = 'patient', lazy = 'dynamic')
     specialists = db.relationship('patient_specialist_assignment', backref = 'patient', 
             lazy = 'dynamic')
     miscarriages = db.relationship('miscarriage', backref = 'patient', lazy = 'dynamic')

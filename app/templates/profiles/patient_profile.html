@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}
+    {{super()}}
+    Patient Profile - {{patient.first_name}} {{patient.middle_name}} {{patient.last_name}}
+{% endblock title%}
+
+{% block page_content %}
+<div class = "page-header">
+	<h3>
+                {{patient.first_name}} {{patient.middle_name}} {{patient.last_name}}
+        </h3>
+	{% if patient.associated_image %}
+
+	<img style = "width : 50%; height : auto;" class = "img img-rounded" src = "{{url_for('static', filename = 'profiles/patients/' + patient.associated_image)}}">
+	
+	{% else %}
+	
+	<img class = "img img-rounded" style = "width : 50%; height : auto;" src = "{{url_for('static', filename = 'profiles/female-avatar.png')}}">
+
+	{% endif %}
+</div>
+<blockquote class "blockquote" style = "padding-bottom : 5%;">
+	<div class = "row">
+		<div class = "col-sm-4"><h4>Name</h4></div>
+		<div class = "col-sm-8"><h4 class = "text-muted">{{patient.first_name}} {{patient.middle_name}} {{patient.last_name}}</h4>
+		</div>
+	</div>
+	<div class = "row">
+		<div class = "col-sm-4"><h4>National ID number</h4></div>
+		<div class = "col-sm-8"><h4 class = "text-muted">{{patient.national_id_no}}</h4></div>
+	</div>
+	<div class = "row">
+		<div class = "col-sm-4"><h4>Date of Birth</h4></div>
+		<div class = "col-sm-8"><h4 class = "text-muted">{{moment(patient.date_of_birth).format( 'LL')}} - {{moment(patient.date_of_birth).fromNow()}}</h4></div>
+	</div>
+	<div class = "row">
+		<div class = "col-sm-4"><h4>Nationality</h4></div>
+		<div class = "col-sm-8"><h4 class = "text-muted">{{patient.nationality}}</h4></div>
+	</div>
+	<div class = "row">
+		<div class = "col-sm-4"><h4>Email address</h4></div>
+                <div class = "col-sm-8"><h4 class = "text-muted">{{patient.email_address}}</h4></div>
+        </div>
+	<div class = "row">
+		<div class = "col-sm-4"><h4>Residential address</h4></div>
+		<div class = "col-sm-8"><h4 class = "text-muted">{{patient.location_address}}</h4></div>
+        </div>
+
+	<!-- Update patient profile image -->
+	<p>
+	<a class = "btn btn-primary pull-left" href = "{{ url_for('registration.upload_patient_image', patient_id = patient.patient_id) }}">Update Profile Image</a>
+	<a class = "btn btn-primary pull-right" href = "">Update Profile</a>
+        </p>
+</blockquote>
+<hr>
+<div class = "container">
+	<ul class = "nav nav-tabs">
+		<li class = "active">
+			<a href = "{{url_for('profiles.personal', patient_id = patient.patient_id)}}">
+				Personal
+			</a>
+		</li>
+	</ul>
+</div>
+
+{% if tab_variable == 0 %}
+{% endif %}
+{% endblock page_content %}
