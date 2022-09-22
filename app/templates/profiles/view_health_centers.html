@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}
+    {{super()}}
+    Registered Health Centers
+{% endblock title%}
+
+{% block page_content %}
+<div class "page-header">
+	<h3>Registered Health Centers</h3>
+</div>
+<div>
+	<table class = "table table-hover table-responsive table-striped">
+		<thead class = "thead thead-dark">
+			<tr>
+				<th>Center ID</th>
+				<th>Title</th>
+				<th>Type</th>
+				<th>Email Address</th>
+				<th>Location</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for center in centers %}
+			<tr>
+				<td>{{center.health_center_id}}</td>
+				<td>{{center.title}}</td>
+				<td>{{center.type}}</td>
+				<td>{{center.email_address}}</td>
+				<td>{{center.location_address}}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+
+<div class = "pagination">
+	{{ macros.pagination_widget(pagination, 'profiles.view_health_centers')}}
+</div>
+{% endblock page_content %}

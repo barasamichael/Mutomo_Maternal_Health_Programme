@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileRequired, FileAllowed
 from wtforms import (StringField, SelectField, BooleanField, SubmitField, IntegerField, 
-        FileField, PasswordField, FloatField)
+        FileField, PasswordField, FloatField, TextField)
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 from wtforms.fields.html5 import DateField
 from wtforms import ValidationError
@@ -14,6 +14,55 @@ class ImageForm(FlaskForm):
         FileAllowed(['jpg', 'png', 'gif', 'jpeg'], 'Select Image Files Only.')])
 
     submit = SubmitField('submit')
+
+
+class RegisterDepartmentForm(FlaskForm):
+    title = StringField('title', validators = [DataRequired(), Length(1, 255)])
+    description = TextField('description', 
+            validators = [DataRequired(), Length(1, 2000)])
+
+    submit = SubmitField('submit')
+
+    def validate_title(self,field):
+        if health_center_department.query.filter_by(title = field.data).first():
+            raise ValidationError(f'{field.data} already registered')
+
+
+class RegisterHealthCenterTypeForm(FlaskForm):
+    title = StringField('title', validators = [DataRequired(), Length(1, 255)])
+    description = TextField('description', 
+            validators = [DataRequired(), Length(1, 2000)])
+
+    submit = SubmitField('submit')
+
+    def validate_title(self,field):
+        if health_center_type.query.filter_by(title = field.data).first():
+            raise ValidationError(f'{field.data} already registered')
+
+
+class RegisterHealthCenterForm(FlaskForm):
+    title = StringField('title', validators = [DataRequired(), Length(1, 255)])
+    hc_type_id = SelectField('select type of health center', 
+            validators = [DataRequired()])
+
+    email_address = StringField('email address',
+            validators = [DataRequired(), Length(1, 128), Email()])
+    location_address = StringField('location address', 
+            validators = [DataRequired(), Length(1, 255)])
+    
+    x_coordinate = FloatField('x coordinate', validators = [DataRequired()])
+    y_coordinate = FloatField('y coordinate', validators = [DataRequired()])
+    z_coordinate = FloatField('z coordinate', validators = [DataRequired()])
+
+    submit = SubmitField('submit')
+    
+    def validate_title(self,field):
+        if health_center.query.filter_by(title = field.data).first():
+            raise ValidationError(f'{field.data} already exists')
+    
+    def validate_email_address(self,field):
+        if health_center.query.filter_by(email_address = field.data).first():
+            raise ValidationError(f'{field.data} email address is already in use')
 
 
 class RegisterPatientForm(FlaskForm):

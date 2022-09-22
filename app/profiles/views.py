@@ -3,7 +3,42 @@ from flask_login import login_required
 from . import profiles
 from .. import db
 
-from ..models import (Permission, patient)
+from ..models import (Permission, patient, health_center, health_center_type)
+
+
+@profiles.route('/view_health_center_types')
+def view_health_center_types():
+    page = flask.request.args.get('page', 1, type = int)
+    pagination = health_center_type.query.order_by(
+            health_center_type.title.desc()\
+                    ).paginate(page, flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
+                            error_out = False)
+    center_types = pagination.items
+
+    return flask.render_template('profiles/view_health_center_types.html',
+            center_types = center_types, pagination = pagination)
+
+
+@profiles.route('/view_health_centers')
+def view_health_centers():
+    page = flask.request.args.get('page', 1, type = int)
+    pagination = health_center.query.order_by(health_center.hc_type_id.desc())\
+            .join(health_center_type, 
+                    health_center_type.hc_type_id == health_center.hc_type_id)\
+            .add_columns(
+                    health_center.health_center_id,
+                    health_center.title,
+                    health_center.location_address,
+                    health_center.email_address,
+                    health_center_type.hc_type_id,
+                    health_center_type.title.label('type')
+                ).order_by(health_center.hc_type_id.desc())\
+                        .paginate(page, flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
+                                error_out = False)
+    centers = pagination.items
+
+    return flask.render_template('profiles/view_health_centers.html', centers = centers, 
+            pagination = pagination)
 
 
 @profiles.route('/list_of_patients')

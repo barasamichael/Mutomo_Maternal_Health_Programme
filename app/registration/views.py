@@ -4,9 +4,11 @@ from werkzeug.utils import secure_filename
 from . import registration
 from .. import db
 
-from .forms import RegisterPatientForm, ImageForm
+from .forms import (RegisterPatientForm, RegisterHealthCenterTypeForm, RegisterHealthCenterForm, 
+        ImageForm, RegisterDepartmentForm)
+
 from ..models import (Permission, patient, health_center_type, health_center, patient_phone_no, 
-        health_practitioner, health_practitioner_type)
+        health_practitioner, health_center_department, health_practitioner_type)
 
 def validate_image(stream):
     header = stream.read(512)
@@ -17,6 +19,73 @@ def validate_image(stream):
         return None
 
     return '.' + (format if format == 'jpeg' else 'jpg')
+
+
+@registration.route('/register_health_center_type/<int:health_center_id>', 
+        methods = ['GET', 'POST'])
+def register_department(health_center_id):
+    form = RegisterDepartmentForm()
+
+    if form.validate_on_submit():
+        Department = health_center_department(
+                title = form.title.data,
+                description = form.description.data,
+                health_center_id = health_center_id
+        )
+        db.session.add(Department)
+        db.session.commit()
+
+        flask.flash(f'{form.title.data} registered successfully')
+        return flask.redirect(flask.url_for('registration.register_department'))
+
+    return flask.render_template('registration/register_department.html', 
+            form = form)
+
+
+@registration.route('/register_health_center_type', methods = ['GET', 'POST'])
+def register_health_center_type():
+    form = RegisterHealthCenterTypeForm()
+
+    if form.validate_on_submit():
+        Health_Center_Type = health_center_type(
+                title = form.title.data,
+                description = form.description.data
+        )
+        db.session.add(Health_Center_Type)
+        db.session.commit()
+
+        flask.flash(f'{form.title.data} registered successfully')
+        return flask.redirect(flask.url_for('registration.register_health_center_type'))
+
+    return flask.render_template('registration/register_health_center_type.html', 
+            form = form)
+
+
+@registration.route('/register_health_center', methods = ['GET', 'POST'])
+def register_health_center():
+    form = RegisterHealthCenterForm()
+
+    types = health_center_type.query.order_by(health_center_type.title.asc()).all()
+    form.hc_type_id.choices = [((hc_type.hc_type_id), (hc_type.title)) 
+            for hc_type in types]
+
+    if form.validate_on_submit():
+        Health_Center = health_center(
+                title = form.title.data,
+                email_address = form.email_address.data,
+                location_address = form.location_address.data,
+                x_coordinate = form.x_coordinate.data,
+                y_coordinate = form.y_coordinate.data,
+                z_coordinate = form.z_coordinate.data,
+                hc_type_id = form.hc_type_id.data
+        )
+        db.session.add(Health_Center)
+        db.session.commit()
+
+        flask.flash(f'{form.title.data} registered successfully')
+        return flask.redirect(flask.url_for('registration.register_health_center'))
+
+    return flask.render_template('registration/register_health_center.html', form = form)
 
 
 @registration.route('/upload_patient_image/<int:patient_id>', methods = ['GET', 'POST'])

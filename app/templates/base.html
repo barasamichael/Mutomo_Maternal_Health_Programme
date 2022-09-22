@@ -48,17 +48,19 @@
 
 		 <li class = "dropdown">
                          <a href = "#" class = "dropdown-toggle" data-toggle = "dropdown">
-                                 About Us
+                                 Registration
                                  <b class = "caret"></b>
-                         </a>                                                                                      <ul class = "dropdown-menu">
+			 </a>
+
+			 <ul class = "dropdown-menu">
 				 <li>
-					<a href = "">
-						Operation
+					 <a href = "{{ url_for('registration.register_health_center_type') }}">
+						Register Health Center Type
 					</a>
 				 </li>
 				 <li>
-					 <a href = "">
-						 Branches
+					 <a href = "{{ url_for('registration.register_health_center') }}">
+						 Register Health Center
 					 </a>
 				 </li>
                          </ul>
