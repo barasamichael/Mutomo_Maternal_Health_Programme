@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}
+    {{super()}}
+    List of Registered Health Practitioners
+{% endblock title%}
+
+{% block page_content %}
+<div class "page-header">
+	<h3>List of Registered Health Practitioners</h3>
+</div>
+<div>
+	<table class = "table table-hover table-responsive table-striped">
+		<thead class = "thead thead-dark">
+			<tr>
+				<th>Registration ID</th>
+				<th>Practitioner ID</th>
+				<th>Name</th>
+				<th>Health Center</th>
+				<th>Department</th>
+				<th>Email Address</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for practitioner in practitioners %}
+			<tr>
+				<td>
+					<a href = "{{url_for('profiles.health_practitioner_profile', health_practitioner_id = practitioner.health_practitioner_id)}}">
+						{{practitioner.health_practitioner_id}}
+					</a>
+				</td>
+				<td>{{practitioner.practitioner_id}}</td>
+				<td>
+					<a href = "{{url_for('profiles.health_practitioner_profile', health_practitioner_id = practitioner.health_practitioner_id)}}">
+						{{practitioner.first_name}} {{practitioner.middle_name}} {{practitioner.last_name}}
+					</a>
+				</td>
+				<td>{{practitioner.health_center}}</td>
+				<td>{{practitioner.department}}</td>
+				<td>{{practitioner.email_address}}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+
+<div class = "pagination">
+	{{ macros.pagination_widget(pagination, 'profiles.list_of_health_practitioners')}}
+</div>
+{% endblock page_content %}

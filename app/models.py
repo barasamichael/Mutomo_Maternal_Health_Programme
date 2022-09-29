@@ -698,6 +698,7 @@ class child(db.Model):
     middle_name = db.Column(db.String(128))
     last_name = db.Column(db.String(128))
     date_of_birth = db.Column(db.Date, default = datetime.utcnow, nullable = False)
+    associated_image = db.Column(db.String(255))
     
     #relationships
     pregnancy_id = db.Column(db.Integer, db.ForeignKey('pregnancy.pregnancy_id'), 
@@ -865,7 +866,7 @@ class health_center_type(db.Model):
     __tablename__ = 'health_center_type'
     hc_type_id = db.Column(db.Integer, primary_key = True)
 
-    title = db.Column(db.String(255), nullable = False)
+    title = db.Column(db.String(255), nullable = False, unique = True)
     description = db.Column(db.Text, nullable = False)
 
     date_created = db.Column(db.DateTime, default = datetime.utcnow)
@@ -885,7 +886,7 @@ class health_center(db.Model):
     """
     __tablename__ = 'health_center'
     health_center_id = db.Column(db.Integer, primary_key = True)
-    title = db.Column(db.String(255), nullable = False)
+    title = db.Column(db.String(255), nullable = False, unique = True)
     
     email_address = db.Column(db.String(128), nullable = False, unique = True)
     location_address = db.Column(db.String(255), nullable = False)
@@ -894,6 +895,7 @@ class health_center(db.Model):
     y_coordinate = db.Column(db.Float, nullable = False)
     z_coordinate = db.Column(db.Float, nullable = False)
 
+    associated_image = db.Column(db.String(255))
     date_created = db.Column(db.DateTime, default = datetime.utcnow)
     last_updated = db.Column(db.DateTime, default = datetime.utcnow,
             onupdate = datetime.utcnow)
@@ -918,6 +920,7 @@ class health_center_department(db.Model):
 
     title = db.Column(db.String(255), nullable = False)
     description = db.Column(db.Text, nullable = False)
+    associated_image = db.Column(db.String(255))
 
     #relationships
     health_center_id = db.Column(db.Integer, db.ForeignKey('health_center.health_center_id'), 
@@ -982,6 +985,9 @@ class department_service(db.Model):
     __tablename__ = 'department_service'
     department_service_id = db.Column(db.Integer, primary_key = True)
     
+    title = db.Column(db.String(255), nullable = False)
+    description = db.Column(db.Text, nullable = False)
+
     #relationships
     hc_department_id = db.Column(db.Integer, db.ForeignKey('health_center_department.hc_department_id'), 
             nullable = False)

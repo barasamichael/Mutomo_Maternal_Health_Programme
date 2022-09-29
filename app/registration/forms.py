@@ -28,6 +28,18 @@ class RegisterDepartmentForm(FlaskForm):
             raise ValidationError(f'{field.data} already registered')
 
 
+class RegisterHealthPractitionerTypeForm(FlaskForm):
+    title = StringField('title', validators = [DataRequired(), Length(1, 255)])
+    description = TextField('description', 
+            validators = [DataRequired(), Length(1, 2000)])
+
+    submit = SubmitField('submit')
+
+    def validate_title(self,field):
+        if health_center_type.query.filter_by(title = field.data).first():
+            raise ValidationError(f'{field.data} already registered')
+
+
 class RegisterHealthCenterTypeForm(FlaskForm):
     title = StringField('title', validators = [DataRequired(), Length(1, 255)])
     description = TextField('description', 
@@ -63,6 +75,27 @@ class RegisterHealthCenterForm(FlaskForm):
     def validate_email_address(self,field):
         if health_center.query.filter_by(email_address = field.data).first():
             raise ValidationError(f'{field.data} email address is already in use')
+
+class RegisterHealthPractitionerForm(FlaskForm):
+    first_name = StringField('first name', validators = [DataRequired(), Length(1, 128)])
+    middle_name = StringField('middle name', validators = [Length(0, 128)])
+    last_name = StringField('last name', validators = [Length(0, 128)])
+    gender = SelectField('gender', validators = [DataRequired()])
+
+    date_of_birth = DateField('date of birth', validators = [DataRequired()])
+
+    email_address = StringField('email address',
+            validators = [DataRequired(), Length(1, 128), Email()])
+
+    location_address = StringField('location address',
+            validators = [DataRequired(), Length(1, 255)])
+    nationality = SelectField('select country', validators = [DataRequired()])
+    national_id_no = IntegerField('national ID number', validators = [DataRequired()])
+    
+    practitioner_id = IntegerField('practitioner ID', validators = [DataRequired()])
+    hp_type_id = SelectField('speciality', validators = [DataRequired()])
+
+    submit = SubmitField('submit')
 
 
 class RegisterPatientForm(FlaskForm):

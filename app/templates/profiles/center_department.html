@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}
+    {{super()}}
+    {{ department.health_center }}- {{ department.title }}
+{% endblock title%}
+
+{% block page_content %}
+<div class = "page-header">
+	<h3>
+                {{department.title}}
+        </h3>
+	{% if department.associated_image %}
+
+	<img style = "width : 100%; height : auto;" class = "img img-rounded" src = "{{url_for('static', filename = 'profiles/health_departments/' + department.associated_image)}}">
+	
+	{% endif %}
+</div>
+<blockquote class "blockquote" style = "padding-bottom : 5%;">
+	<div class = 'list-group'>
+		<span class = 'list-group-item'>
+			<div class = "row">
+				<div class = "col-sm-12"><h4>{{ department.title }}</h4></div>
+			</div>
+			<div class = "row">
+				<div class = "col-sm-12">
+					<h4 class = "text-muted">
+						<a href = "{{url_for('profiles.health_center_profile', health_center_id = department.health_center_id)}}">
+							{{ department.health_center }}
+						</a>
+					</h4>
+				</div>
+			</div>
+			<div class = "row">
+				<div class = "col-sm-12"><h4 class = "text-muted">{{ department.description }}</h4></div>
+			</div>
+		</span>
+	</div>
+	<!-- Update department profile image -->
+	<p>
+	<a class = "btn btn-primary pull-left" href = "{{ url_for('registration.upload_health_department_image', hc_department_id = department.hc_department_id) }}">
+		Update Profile Image
+	</a>
+	<a class = "btn btn-primary pull-right" href = "">Update Profile</a>
+        </p>
+</blockquote>
+<hr>
+<div class = "container">
+	<ul class = "nav nav-tabs">
+		<li class = "active">
+			<a href = "{{url_for('profiles.department_schedule', hc_department_id = department.hc_department_id)}}">
+				Schedule
+			</a>
+		</li>
+		<li>
+			<a href = "{{url_for('profiles.department_practitioners', hc_department_id = department.hc_department_id)}}">
+				Practitioners
+			</a>
+		</li>
+	</ul>
+</div>
+
+{% if tab_variable == 0 %}
+
+<div class = 'list-group' style = 'margin:1%;'>
+	<a href = '' class = 'list-group-item active'>
+		<h4 class = 'list-group-item-header'>
+			Add Schedule
+		</h4>
+	</a>
+</div>
+{% elif tab_variable == 1 %}
+
+<div class = 'list-group' style = 'margin:1%;'>
+	<a href = '{{url_for('registration.register_health_practitioner', department_id = department.hc_department_id)}}' class = 'list-group-item active'>
+		<h4 class = 'list-group-item-header'>
+			Register Health Practitioner
+		</h4>
+	</a>
+</div>
+
+<div class = 'list-group' style = 'margin:1%;'>
+	<span class = 'list-group-item'>
+		<table class = 'table table-dark table-hover table-responsive table-striped'>
+			<thead>
+				<tr>
+					<th>Registration ID</th>
+					<th>Practitioner ID</th>
+					<th>Name</th>
+					<th>Speciality</th>
+					<th>Email Address</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for practitioner in practitioners %}
+				<tr>
+					<td>{{ practitioner.health_practitioner_id}}</td>
+					<td>{{ practitioner.practitioner_id}}</td>
+					<td>
+						<a href = "{{url_for('profiles.health_practitioner_profile', health_practitioner_id = practitioner.health_practitioner_id)}}">
+							{{ practitioner.first_name }} {{ practitioner.middle_name }} {{ practitioner.last_name }}
+						</a>
+					</td>
+					<td>{{ practitioner.title}}</td>
+					<td>{{ practitioner.email_address}}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</span>
+</div>
+
+{% endif %}
+
+{% endblock page_content %}

@@ -21,9 +21,13 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     ORGANISATION_NAME = os.environ.get('ORGANISATION_NAME') or 'Mutomo Maternal Health Programme'
     
-    FLASKY_POSTS_PER_PAGE = os.environ.get('FLASKY_POSTS_PER_PAGE') or 12
+    FLASKY_POSTS_PER_PAGE = os.environ.get('FLASKY_POSTS_PER_PAGE') or 30
 
     PATIENT_UPLOAD_PATH = os.path.join(basedir + '/app/static/profiles/patients')
+    HEALTH_PRACTITIONER_UPLOAD_PATH = os.path.join(basedir + '/app/static/profiles/practitioners')
+    HEALTH_CENTER_UPLOAD_PATH = os.path.join(basedir + '/app/static/profiles/health_centers')
+    CENTER_DEPARTMENT_UPLOAD_PATH = os.path.join(basedir + '/app/static/profiles/health_departments')
+    
     UPLOAD_EXTENSIONS = ['.jpg', '.gif', '.jpeg', '.png']
 
 

@@ -22,8 +22,16 @@
 		<tbody>
 			{% for center in centers %}
 			<tr>
-				<td>{{center.health_center_id}}</td>
-				<td>{{center.title}}</td>
+				<td>
+					<a href = "{{url_for('profiles.health_center_profile', health_center_id = center.health_center_id)}}">
+						{{center.health_center_id}}
+					</a>
+				</td>
+				<td>
+					<a href = "{{url_for('profiles.health_center_profile', health_center_id = center.health_center_id)}}">
+						{{center.title}}
+					</a>
+				</td>
 				<td>{{center.type}}</td>
 				<td>{{center.email_address}}</td>
 				<td>{{center.location_address}}</td>
