@@ -9,46 +9,70 @@
 	<h3>
                 {{practitioner.first_name}} {{practitioner.middle_name}} {{practitioner.last_name}}
         </h3>
-	{% if practitioner.associated_image %}
-
-	<img style = "width : 50%; height : auto;" class = "img img-rounded" src = "{{url_for('static', filename = 'profiles/practitioners/' + practitioner.associated_image)}}">
-	
-	{% endif %}
 </div>
-<blockquote class "blockquote" style = "padding-bottom : 5%;">
-	<div class = "row">
-		<div class = "col-sm-4"><h4>Name</h4></div>
-		<div class = "col-sm-8"><h4 class = "text-muted">{{practitioner.first_name}} {{practitioner.middle_name}} {{practitioner.last_name}}</h4>
-		</div>
-	</div>
-	<div class = "row">
-		<div class = "col-sm-4"><h4>National ID number</h4></div>
-		<div class = "col-sm-8"><h4 class = "text-muted">{{practitioner.national_id_no}}</h4></div>
-	</div>
-	<div class = "row">
-		<div class = "col-sm-4"><h4>Date of Birth</h4></div>
-		<div class = "col-sm-8"><h4 class = "text-muted">{{moment(practitioner.date_of_birth).format( 'LL')}} - {{moment(practitioner.date_of_birth).fromNow()}}</h4></div>
-	</div>
-	<div class = "row">
-		<div class = "col-sm-4"><h4>Nationality</h4></div>
-		<div class = "col-sm-8"><h4 class = "text-muted">{{practitioner.nationality}}</h4></div>
-	</div>
-	<div class = "row">
-		<div class = "col-sm-4"><h4>Email address</h4></div>
-                <div class = "col-sm-8"><h4 class = "text-muted">{{practitioner.email_address}}</h4></div>
-        </div>
-	
-	<!-- Update practitioner profile image -->
-	<p>
-	<a class = "btn btn-primary pull-left" href = "{{ url_for('registration.upload_health_practitioner_image', health_practitioner_id = practitioner.practitioner_id) }}">Update Profile Image</a>
-	<a class = "btn btn-primary pull-right" href = "">Update Profile</a>
-        </p>
-</blockquote>
+
+<div class = "list-group">
+        <span class = "list-group-item">
+        	<div class = "row">
+			<span class = "col-sm-4">
+				{% if practitioner.associated_image %}
+
+				<img style = "width : 100%; height : auto;" class = "img img-circle" src = "{{url_for('static', filename = 'profiles/practitioners/' + practitioner.associated_image)}}">
+
+				{% else %}
+
+				<img class = "img img-rounded" style = "width : 50%; height : auto;" src = "{{url_for('static', filename = 'profiles/female-avatar.png')}}">
+				{% endif %}
+			</span>
+			<span class = "col-sm-8">
+				<blockquote class "blockquote" style = "padding-bottom : 5%;">
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Name</h4></div>
+						<div class = "col-sm-8"><h4 class = "text-muted">{{practitioner.first_name}} {{practitioner.middle_name}} {{practitioner.last_name}}</h4>
+						</div>
+					</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Medical License ID</h4></div>
+						<div class = "col-sm-8"><h4 class = "text-muted">{{practitioner.practitioner_id}}</h4></div>
+					</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>National ID number</h4></div>
+						<div class = "col-sm-8"><h4 class = "text-muted">{{practitioner.national_id_no}}</h4></div>
+					</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Date of Birth</h4></div>
+						<div class = "col-sm-8"><h4 class = "text-muted">{{moment(practitioner.date_of_birth).format( 'LL')}} - {{moment(practitioner.date_of_birth).fromNow()}}</h4></div>
+					</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Nationality</h4></div>
+						<div class = "col-sm-8"><h4 class = "text-muted">{{practitioner.nationality}}</h4></div>
+					</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Email address</h4></div>
+                				<div class = "col-sm-8"><h4 class = "text-muted">{{practitioner.email_address}}</h4></div>
+        				</div>
+					
+					<!-- Update practitioner profile image -->
+					<p>
+					<a class = "btn btn-primary pull-left" href = "{{ url_for('registration.upload_health_practitioner_image', health_practitioner_id = practitioner.health_practitioner_id) }}">
+						Update Profile Image
+					</a>
+					<a class = "btn btn-primary pull-right" href = "">
+						Update Profile
+					</a>
+        				</p>
+				</blockquote>
+                	</span>
+        	</div>
+	</span>
+</div>
+
 <hr>
+
 <div class = "container">
 	<ul class = "nav nav-tabs">
 		<li class = "active">
-			<a href = "{{url_for('profiles.health_practitioner_personal', health_practitioner_id = practitioner.practitioner_id)}}">
+			<a href = "{{url_for('profiles.health_practitioner_personal', health_practitioner_id = practitioner.health_practitioner_id)}}">
 				Personal
 			</a>
 		</li>
@@ -56,5 +80,47 @@
 </div>
 
 {% if tab_variable == 0 %}
+<div class = "list-group", style = 'margin:1%;'>
+	<h4 class = "text-muted" style = "margin-top:1%;">Contacts</h4>
+	<span class = "list-group-item">
+		<div class = 'list-group' style = 'margin:1%;'>
+			<a href = '{{url_for('registration.register_health_practitioner_phone_no', health_practitioner_id = practitioner.health_practitioner_id)}}' class = 'list-group-item active'>
+				<h4 class = 'list-group-item-header'>
+					Add Phone Number
+				</h4>
+			</a>
+		</div>
+		<table class = 'table table-dark table-hover table-responsive table-striped'>
+			<thead class = 'thead thead-dark'>
+				<tr>
+					<th>Contact</th>
+					<th>Emergency</th>
+					<th>Status</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for phone_number in phone_numbers %}
+				<tr>
+					<td>{{ phone_number.contact }}</td>
+					<td>
+						{% if phone_number.emergency %}
+						<span style = "color : red;"> Emergency </span>
+						{% else %}
+						<span style = "color : grey;"> Normal </span>
+						{% endif %}
+					</td>
+					<td>
+						{% if phone_number.active %}
+						<span style = "color : green;"> Active </span>
+						{% else %}
+						<span style = "color : red;"> Inactive </span>
+						{% endif %}
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</span>
+</div>
 {% endif %}
 {% endblock page_content %}

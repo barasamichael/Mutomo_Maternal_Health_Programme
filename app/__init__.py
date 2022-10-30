@@ -41,4 +41,7 @@ def create_app(config_name):
     from .profiles import profiles as profiles_blueprint
     app.register_blueprint(profiles_blueprint)
     
+    from .checkups import checkups as checkups_blueprint
+    app.register_blueprint(checkups_blueprint)
+    
     return app

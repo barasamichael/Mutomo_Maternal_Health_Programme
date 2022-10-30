@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}
+    {{super()}}
+    {{profile.first_name}} {{profile.middle_name}} {{profile.last_name}}
+{% endblock title%}
+
+{% block page_content %}
+<div class = "page-header">
+	<h3>
+                {{profile.first_name}} {{profile.middle_name}} {{profile.last_name}}
+        </h3>
+</div>
+<blockquote>
+	<div class = 'row'>
+		<div class = 'col-sm-3'>
+			Antenatal Checkup ID
+		</div>
+		<div class = 'col-sm-9'>
+                	{{profile.first_name}} {{profile.middle_name}} {{profile.last_name}}
+		</div>
+	</div>
+	<div class = 'row'>
+		<div class = 'col-sm-3'>
+			Practitioner
+		</div>
+		<div class = 'col-sm-9'>
+                	{{profile.health_first_name}} {{profile.health_middle_name}} {{profile.health_last_name}}
+		</div>
+	</div>
+	<div class = 'row'>
+		<div class = 'col-sm-3'>
+			Conception Date (estimated)
+		</div>
+		<div class = 'col-sm-9'>
+			{{moment(profile.conception_date).format('LLL')}}
+		</div>
+	</div>
+	<div class = 'row'>
+		<div class = 'col-sm-3'>
+			Pregnancy Period
+		</div>
+		<div class = 'col-sm-9'>
+			{{moment(profile.conception_date).fromNow()}}
+		</div>
+	</div>
+	<div class = 'row'>
+		<div class = 'col-sm-3'>
+			Due Date (estimated)
+		</div>
+		<div class = 'col-sm-9'>
+			{{moment(profile.conception_date).format('LLL')}}
+		</div>
+	</div>
+</blockquote>
+{% endblock page_content %}

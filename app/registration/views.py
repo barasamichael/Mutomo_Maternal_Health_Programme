@@ -6,10 +6,12 @@ from .. import db
 
 from .forms import (RegisterPatientForm, RegisterHealthCenterTypeForm, RegisterHealthCenterForm, 
         ImageForm, RegisterDepartmentForm, RegisterHealthPractitionerForm,
-        RegisterHealthPractitionerTypeForm)
+        RegisterHealthPractitionerTypeForm, RegisterPatientPhoneNoForm, RegisterPregnancyForm,
+        RegisterHealthCenterContactForm, RegisterHealthPractitionerPhoneNoForm)
 
 from ..models import (Permission, patient, health_center_type, health_center, patient_phone_no, 
-        health_practitioner, health_center_department, health_practitioner_type)
+        health_practitioner, health_center_department, pregnancy, health_practitioner_type, hc_contact,
+        health_practitioner_phone_no)
 
 def validate_image(stream):
     header = stream.read(512)
@@ -20,6 +22,98 @@ def validate_image(stream):
         return None
 
     return '.' + (format if format == 'jpeg' else 'jpg')
+
+@registration.route('/register_health_center_contact/<int:health_center_id>', 
+        methods = ['GET', 'POST'])
+def register_health_center_contact(health_center_id):
+    Health_Center = health_center.query.filter_by(
+            health_center_id = health_center_id).first_or_404()
+
+    form = RegisterHealthCenterContactForm()
+    if form.validate_on_submit():
+        Contact = hc_contact(
+                description = form.description.data,
+                emergency = form.emergency.data,
+                health_center_id = Health_Center.health_center_id
+                )
+
+        db.session.add(Contact)
+        db.session.commit()
+
+        flask.flash(f'Contact Number {form.description.data} recorded successfully.')
+        return flask.redirect(
+            flask.url_for('profiles.health_center_profile', health_center_id = health_center_id))
+
+    return flask.render_template('registration/register_health_center_contact.html', form = form)
+
+
+@registration.route('/register_health_practitioner_phone_no/<int:health_practitioner_id>', 
+        methods = ['GET', 'POST'])
+def register_health_practitioner_phone_no(health_practitioner_id):
+    Practitioner = health_practitioner.query.filter_by(
+            health_practitioner_id = health_practitioner_id).first_or_404()
+
+    form = RegisterHealthPractitionerPhoneNoForm()
+    if form.validate_on_submit():
+        Phone_No = health_practitioner_phone_no(
+                contact = form.contact.data,
+                emergency = form.emergency.data,
+                health_practitioner_id = Practitioner.health_practitioner_id
+                )
+
+        db.session.add(Phone_No)
+        db.session.commit()
+
+        flask.flash(f'Phone number {form.contact.data} recorded successfully.')
+        return flask.redirect(flask.url_for('profiles.health_practitioner_profile', 
+                    health_practitioner_id = Practitioner.health_practitioner_id))
+
+    return flask.render_template('registration/register_health_practitioner_phone_no.html', 
+            form = form)
+
+
+@registration.route('/register_patient_phone_no/<int:patient_id>', methods = ['GET', 'POST'])
+def register_patient_phone_no(patient_id):
+    Patient = patient.query.filter_by(patient_id = patient_id).first_or_404()
+
+    form = RegisterPatientPhoneNoForm()
+    if form.validate_on_submit():
+        Phone_No = patient_phone_no(
+                contact = form.contact.data,
+                emergency = form.emergency.data,
+                patient_id = Patient.patient_id
+                )
+
+        db.session.add(Phone_No)
+        db.session.commit()
+
+        flask.flash(f'Phone number {form.contact.data} recorded successfully.')
+        return flask.redirect(
+                flask.url_for('profiles.patient_profile', patient_id = Patient.patient_id))
+
+    return flask.render_template('registration/register_patient_phone_no.html', form = form)
+
+
+@registration.route('/register_pregnancy/<int:patient_id>', methods = ['GET', 'POST'])
+def register_pregnancy(patient_id):
+    Patient = patient.query.filter_by(patient_id = patient_id).first_or_404()
+
+    form = RegisterPregnancyForm()
+    if form.validate_on_submit():
+        Pregnancy = pregnancy(
+                conception_date = form.conception_date.data,
+                due_date = form.due_date.data,
+                patient_id = Patient.patient_id
+                )
+
+        db.session.add(Pregnancy)
+        db.session.commit()
+
+        flask.flash('Pregnancy record successfully.')
+        return flask.redirect(
+                flask.url_for('profiles.patient_profile', patient_id = Patient.patient_id))
+
+    return flask.render_template('registration/register_pregnancy.html', form = form)
 
 
 @registration.route('/register_department_service/<int:hc_department_id>')

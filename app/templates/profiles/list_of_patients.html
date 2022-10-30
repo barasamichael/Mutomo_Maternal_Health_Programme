@@ -36,7 +36,11 @@
 				</td>
 				<td>{{patient.marital_status}}</td>
 				<td>{{patient.email_address}}</td>
-				<td>{{patient.location_address}}</td>
+				<td>
+					<a href = "http://maps.google.com/?{{ patient.location_address }}">
+						{{patient.location_address}}
+					</a>
+				</td>
 			</tr>
 			{% endfor %}
 		</tbody>

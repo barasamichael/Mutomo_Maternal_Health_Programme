@@ -6,8 +6,8 @@ from wtforms.validators import DataRequired, Length, Email, EqualTo
 from wtforms.fields.html5 import DateField
 from wtforms import ValidationError
 from ..models import (patient, patient_phone_no, health_center, health_center_department, 
-        health_center_type, health_practitioner, health_practitioner_type)
-
+        health_center_type, health_practitioner, health_practitioner_type, hc_contact,
+        health_practitioner_phone_no)
 
 class ImageForm(FlaskForm):
     file = FileField('select file', validators = [FileRequired(),
@@ -97,6 +97,47 @@ class RegisterHealthPractitionerForm(FlaskForm):
 
     submit = SubmitField('submit')
 
+
+class RegisterPregnancyForm(FlaskForm):
+    conception_date = DateField('enter date of conception', validators = [DataRequired()])
+    due_date = DateField('enter approximated due date', validators = [DataRequired()])
+
+    submit = SubmitField('submit')
+    
+
+class RegisterHealthCenterContactForm(FlaskForm):
+    description = StringField('contact', validators = [DataRequired(), Length(1, 16)])
+    emergency = BooleanField('this is an emergency contact')
+
+    submit = SubmitField('submit')
+    
+    def validate_description(self,field):
+        if hc_contact.query.filter_by(description = field.data).first():
+            raise ValidationError(f'{field.data} already exists. Please try another contact')
+
+
+class RegisterHealthPractitionerPhoneNoForm(FlaskForm):
+    contact = StringField('contact', validators = [DataRequired(), Length(1, 16)])
+    emergency = BooleanField('this is an emergency contact')
+
+    submit = SubmitField('submit')
+    
+    def validate_contact(self,field):
+        if health_practitioner_phone_no.query.filter_by(contact = field.data).first():
+            raise ValidationError(f'{field.data} already exists. Please try another number')
+    
+
+
+class RegisterPatientPhoneNoForm(FlaskForm):
+    contact = StringField('contact', validators = [DataRequired(), Length(1, 16)])
+    emergency = BooleanField('this is an emergency contact')
+
+    submit = SubmitField('submit')
+    
+    def validate_contact(self,field):
+        if patient_phone_no.query.filter_by(contact = field.data).first():
+            raise ValidationError(f'{field.data} already exists. Please try another number')
+    
 
 class RegisterPatientForm(FlaskForm):
     first_name = StringField('first name', validators = [DataRequired(), Length(1, 128)])

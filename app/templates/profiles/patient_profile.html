@@ -5,53 +5,64 @@
 {% endblock title%}
 
 {% block page_content %}
-<div class = "page-header">
 	<h3>
-                {{patient.first_name}} {{patient.middle_name}} {{patient.last_name}}
+		{{patient.first_name}} {{patient.middle_name}} {{patient.last_name}}
         </h3>
-	{% if patient.associated_image %}
+<div class = "list-group">
+        <span class = "list-group-item">
+        	<div class = "row">
+			<span class = "col-sm-4">
+				{% if patient.associated_image %}
 
-	<img style = "width : 50%; height : auto;" class = "img img-rounded" src = "{{url_for('static', filename = 'profiles/patients/' + patient.associated_image)}}">
-	
-	{% else %}
-	
-	<img class = "img img-rounded" style = "width : 50%; height : auto;" src = "{{url_for('static', filename = 'profiles/female-avatar.png')}}">
+				<img style = "width : 100%; height : auto;" class = "img img-circle" src = "{{url_for('static', filename = 'profiles/patients/' + patient.associated_image)}}">
 
-	{% endif %}
+				{% else %}
+
+				<img class = "img img-rounded" style = "width : 50%; height : auto;" src = "{{url_for('static', filename = 'profiles/female-avatar.png')}}">
+				{% endif %}
+			</span>
+			<span class = "col-sm-8">
+				<blockquote class "blockquote" style = "padding-bottom : 5%;">
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Name</h4></div>
+						<div class = "col-sm-8"><h4 class = "text-muted">{{patient.first_name}} {{patient.middle_name}} {{patient.last_name}}</h4>
+						</div>
+					</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>National ID number</h4></div>
+						<div class = "col-sm-8"><h4 class = "text-muted">{{patient.national_id_no}}</h4></div>
+					</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Date of Birth</h4></div>
+						<div class = "col-sm-8"><h4 class = "text-muted">{{moment(patient.date_of_birth).format( 'LL')}} - {{moment(patient.date_of_birth).fromNow()}}</h4></div>
+					</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Nationality</h4></div>
+						<div class = "col-sm-8"><h4 class = "text-muted">{{patient.nationality}}</h4></div>
+					</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Email address</h4></div>
+                				<div class = "col-sm-8"><h4 class = "text-muted">{{patient.email_address}}</h4></div>
+        				</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Residential address</h4></div>
+						<div class = "col-sm-8"><h4 class = "text-muted">{{patient.location_address}}</h4></div>
+        				</div>
+					
+					<!-- Update patient profile image -->
+					<p>
+					<a class = "btn btn-primary pull-left" href = "{{ url_for('registration.upload_patient_image', patient_id = patient.patient_id) }}">
+						Update Profile Image
+					</a>
+					<a class = "btn btn-primary pull-right" href = "">
+						Update Profile
+					</a>
+        				</p>
+				</blockquote>
+                	</span>
+        	</div>
+	</span>
 </div>
-<blockquote class "blockquote" style = "padding-bottom : 5%;">
-	<div class = "row">
-		<div class = "col-sm-4"><h4>Name</h4></div>
-		<div class = "col-sm-8"><h4 class = "text-muted">{{patient.first_name}} {{patient.middle_name}} {{patient.last_name}}</h4>
-		</div>
-	</div>
-	<div class = "row">
-		<div class = "col-sm-4"><h4>National ID number</h4></div>
-		<div class = "col-sm-8"><h4 class = "text-muted">{{patient.national_id_no}}</h4></div>
-	</div>
-	<div class = "row">
-		<div class = "col-sm-4"><h4>Date of Birth</h4></div>
-		<div class = "col-sm-8"><h4 class = "text-muted">{{moment(patient.date_of_birth).format( 'LL')}} - {{moment(patient.date_of_birth).fromNow()}}</h4></div>
-	</div>
-	<div class = "row">
-		<div class = "col-sm-4"><h4>Nationality</h4></div>
-		<div class = "col-sm-8"><h4 class = "text-muted">{{patient.nationality}}</h4></div>
-	</div>
-	<div class = "row">
-		<div class = "col-sm-4"><h4>Email address</h4></div>
-                <div class = "col-sm-8"><h4 class = "text-muted">{{patient.email_address}}</h4></div>
-        </div>
-	<div class = "row">
-		<div class = "col-sm-4"><h4>Residential address</h4></div>
-		<div class = "col-sm-8"><h4 class = "text-muted">{{patient.location_address}}</h4></div>
-        </div>
-
-	<!-- Update patient profile image -->
-	<p>
-	<a class = "btn btn-primary pull-left" href = "{{ url_for('registration.upload_patient_image', patient_id = patient.patient_id) }}">Update Profile Image</a>
-	<a class = "btn btn-primary pull-right" href = "">Update Profile</a>
-        </p>
-</blockquote>
 <hr>
 <div class = "container">
 	<ul class = "nav nav-tabs">
@@ -60,9 +71,193 @@
 				Personal
 			</a>
 		</li>
+		<li>
+			<a href = "{{url_for('profiles.medical', patient_id = patient.patient_id)}}">
+				Medical
+			</a>
+		</li>
+		<li>
+			<a href = "{{url_for('profiles.history', patient_id = patient.patient_id)}}">
+				Others
+			</a>
+		</li>
+		<li>
+			<a href = "{{url_for('profiles.pregnancies', patient_id = patient.patient_id)}}">
+				Pregnancies
+			</a>
+		</li>
 	</ul>
 </div>
 
 {% if tab_variable == 0 %}
+<div class = "list-group", style = 'margin:1%;'>
+	<h4 class = "text-muted" style = "margin-top:1%;">Contacts</h4>
+	<span class = "list-group-item">
+		<div class = 'list-group' style = 'margin:1%;'>
+			<a href = '{{url_for('registration.register_patient_phone_no', patient_id = patient.patient_id)}}' class = 'list-group-item active'>
+				<h4 class = 'list-group-item-header'>
+					Add Phone Number
+				</h4>
+			</a>
+		</div>
+		<table class = 'table table-dark table-hover table-responsive table-striped'>
+			<thead class = 'thead thead-dark'>
+				<tr>
+					<th>Contact</th>
+					<th>Emergency</th>
+					<th>Status</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for phone_number in phone_numbers %}
+				<tr>
+					<td>{{ phone_number.contact }}</td>
+					<td>
+						{% if phone_number.emergency %}
+						<span style = "color : red;"> Emergency </span>
+						{% else %}
+						<span style = "color : grey;"> Normal </span>
+						{% endif %}
+					</td>
+					<td>
+						{% if phone_number.active %}
+						<span style = "color : green;"> Active </span>
+						{% else %}
+						<span style = "color : red;"> Inactive </span>
+						{% endif %}
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</span>
+</div>
+<div class = "list-group", style = 'margin:1%;'>
+	<h4 class = "text-muted" style = "margin-top:5%;">Close Family and Friends</h4>
+	<span class = "list-group-item">
+		<div class = 'list-group' style = 'margin:1%;'>
+			<a href = '{{url_for('registration.register_patient_phone_no', patient_id = patient.patient_id)}}' class = 'list-group-item active'>
+				<h4 class = 'list-group-item-header'>
+					Add Close Family and Friend
+				</h4>
+			</a>
+		</div>
+		<table class = 'table table-dark table-hover table-responsive table-striped'>
+			<thead class = 'thead thead-dark'>
+				<tr>
+					<th>Contact</th>
+					<th>Emergency</th>
+					<th>Status</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for phone_number in phone_numbers %}
+				<tr>
+					<td>{{ phone_number.contact }}</td>
+					<td>
+						{% if phone_number.emergency %}
+						<span style = "color : red;"> Emergency </span>
+						{% else %}
+						<span style = "color : grey;"> Normal </span>
+						{% endif %}
+					</td>
+					<td>
+						{% if phone_number.active %}
+						<span style = "color : green;"> Active </span>
+						{% else %}
+						<span style = "color : red;"> Inactive </span>
+						{% endif %}
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</span>
+</div>
+
+
+{% elif tab_variable == 1 %}
+<div class = "list-group", style = 'margin:1%;'>
+	<h4 class = "text-muted" style = "margin-top:5%;">Allergies</h4>
+	<span class = "list-group-item">
+		<div class = 'list-group' style = 'margin:1%;'>
+			<h4>Add Allergy</h4>
+			<div>
+				{{ wtf.quick_form(allergy_form) }} 
+			</div>
+		</div>
+		{% for allergy in allergies %}
+		<div class = "list-group", style = 'margin:1%;'>
+			<span class = "list-group-item">
+				<h4 style = "color:red;"><b>{{allergy.description}}</b></h4>
+				
+				<h5 style = "color:maroon;"><b>Causes</b></h5>
+				<p>{{ allergy.cause }}</p>
+
+				{% if symptoms.get(allergy.allergy_id) %}
+				<h5 style = "color:maroon;"><b>Symptoms</b></h5>
+				<ul>
+					{% for symptom in symptoms.get(allergy.allergy_id) %}
+					<li>{{ symptom.description }}</li>
+					{% endfor %}
+				</ul>
+				{% endif %}
+				<h5 style = "color:maroon;"><b>Remedy</b></h5>
+				<p>{{ allergy.remedy }}</p>
+				
+				<p>
+				<a class = "btn btn-success" href = "{{url_for('profiles.allergy_profile', allergy_id = allergy.allergy_id)}}">
+					Detailed View
+				</a>
+				</p>
+			</span>
+		</div>
+		{% endfor %}
+	</span>
+<div>
+
+{% elif tab_variable == 3 %}
+<div class = "list-group", style = 'margin:1%;'>
+	<h4 class = "text-muted" style = "margin-top:5%;">Pregnancy Records</h4>
+	<span class = "list-group-item">
+		<div class = 'list-group' style = 'margin:1%;'>
+			<a href = '{{url_for('registration.register_pregnancy', patient_id = patient.patient_id)}}' class = 'list-group-item active'>
+				<h4 class = 'list-group-item-header'>
+					Add Pregnancy Record
+				</h4>
+			</a>
+		</div>
+		<table class = 'table table-dark table-hover table-responsive table-striped'>
+			<thead class = 'thead thead-dark'>
+				<tr>
+					<th>Record ID</th>
+					<th>Date Created</th>
+					<th>Approx. Conception Date</th>
+					<th>Approx. Due Date</th>
+					<th>Antenatal Session</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for pregnancy in pregnancies %}
+				<tr>
+					<td>
+						<a href = "{{ url_for('profiles.pregnancy_profile', pregnancy_id = pregnancy.pregnancy_id)}}">
+							{{ pregnancy.pregnancy_id }}
+						</a>
+					</td>
+					<td>{{ moment(pregnancy.date_created).format('LLLL') }}</td>
+					<td>{{ moment(dates.get(pregnancy.pregnancy_id)[0]).format('LL') }}</td>
+					<td>{{ moment(dates.get(pregnancy.pregnancy_id)[1]).format('LL') }}</td>
+					<td>
+						<a href = "{{url_for('checkups.register_checkup', pregnancy_id = pregnancy.pregnancy_id)}}" class = "btn btn-success">
+							New Session
+						</a>
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</span>
+</div>
 {% endif %}
 {% endblock page_content %}

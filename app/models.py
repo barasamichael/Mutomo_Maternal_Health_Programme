@@ -264,7 +264,7 @@ class hc_contact(db.Model):
     __tablename__ = 'hc_contact'
     hc_contact_id = db.Column(db.Integer, primary_key = True)
     
-    description = db.Column(db.String(), nullable = False)
+    description = db.Column(db.String(16), nullable = False)
     emergency = db.Column(db.Boolean, default = False)
 
     date_created = db.Column(db.DateTime, default = datetime.utcnow)
@@ -1029,6 +1029,7 @@ class mental_health(db.Model):
     """
     __tablename__ = 'mental_health'
     mental_health_id = db.Column(db.Integer, primary_key = True)
+    description = db.Column(db.String(255), nullable = False)
 
     #relationships
     checkup_id = db.Column(db.Integer, db.ForeignKey('checkup.checkup_id'), nullable = False)

@@ -46,8 +46,8 @@ def add_health_practitioners():
         
             #upload user image
             file_directory = os.path.dirname(os.path.abspath(__file__))
-            female_directory = os.path.join(file_directory, "static/Image-Repository/female")
-            male_directory = os.path.join(file_directory, "static/Image-Repository/male")
+            female_directory = os.path.join(file_directory, "static/Image-Repository/practitioners/female")
+            male_directory = os.path.join(file_directory, "static/Image-Repository/practitioners/male")
 
             female_images = [image for image in os.listdir(female_directory)]
             male_images = [image for image in os.listdir(male_directory)]
@@ -155,8 +155,13 @@ def add_health_center_departments():
                     description = departments.get(i)[1],
                     health_center_id = center.health_center_id
                     )
-            db.session.add(Department)
+            file_directory = os.path.dirname(os.path.abspath(__file__))
+            image_directory = os.path.join(file_directory, "static/Image-Repository/departments")
+
+            department_images = [image for image in os.listdir(image_directory)]
+            Department.associated_image = department_images[randint(0, len(department_images) - 1)]
             
+            db.session.add(Department)
             try:
                 db.session.commit()
                 print("{} registered successfully...".format(departments.get(i)[0]))
@@ -195,6 +200,12 @@ def add_health_centers():
                     z_coordinate = float(coordinates[2]),
                     hc_type_id = randint(1, health_center_types)
                     )
+            file_directory = os.path.dirname(os.path.abspath(__file__))
+            image_directory = os.path.join(file_directory, "static/Image-Repository/centers")
+
+            center_images = [image for image in os.listdir(image_directory)]
+            Health_Center.associated_image = center_images[randint(0, len(center_images) - 1)]
+            
             db.session.add(Health_Center)
             try:
                 db.session.commit()
