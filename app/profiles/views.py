@@ -1,15 +1,226 @@
-import flask
+import flask, os
+from werkzeug.utils import secure_filename
 from datetime import datetime
 from flask_login import login_required
 from . import profiles
 from .. import db
-from .forms import (RegisterAllergyForm, RegisterSymptomForm)
+from .forms import (RegisterAllergyForm, RegisterSymptomForm, RegisterSurgeryForm, UpdateBodyPartForm,
+        MedicationHistoryForm, FamilyHistoryForm, SocialHistoryForm, RegisterMiscarriageForm,
+        UpdatePatientDocumentTypeForm, DocumentUploadForm)
 
 from ..models import (Permission, patient, health_center, health_center_type,
         health_center_department, health_practitioner, health_practitioner_type, 
-        patient_phone_no, health_practitioner_phone_no, pregnancy, checkup,
+        patient_phone_no, health_practitioner_phone_no, pregnancy, checkup, next_of_kin,
         hc_contact, allergy, allergy_symptom, social_history, medication_history, 
-        miscarriage, surgery)
+        miscarriage, surgery, body_part, family_history, social_history, patient_document_type,
+        patient_document)
+
+@profiles.route('/patient_document_type_profile/<int:type_id>', methods = ['GET', 'POST'])
+def patient_document_type_profile(type_id):
+    Document_Type = patient_document_type.query\
+            .filter_by(patient_document_type_id = type_id).first_or_404()
+
+    form = UpdatePatientDocumentTypeForm()
+    if form.validate_on_submit():
+        Document_Type = patient_document_type.query\
+            .filter_by(patient_document_type_id = type_id).first_or_404()
+
+        Document_Type.title = form.title.data
+        Document_Type.description = form.description.data
+
+        db.session.add(Document_Type)
+        db.session.commit()
+
+        flask.flash('Update successfull.')
+        return flask.redirect(
+                flask.url_for('profiles.patient_document_type_profile', type_id = type_id))
+
+    form.title.data = Document_Type.title
+    form.description.data = Document_Type.description
+
+    return flask.render_template('profiles/patient_document_type_profile.html', 
+            form = form, type = Document_Type)
+
+@profiles.route('/patient_document_types')
+def patient_document_types():
+    types = patient_document_type.query.order_by(patient_document_type.title.desc()).all()
+    return flask.render_template('profiles/patient_document_types.html', 
+            types = types)
+
+
+@profiles.route('/family_history_profile/<int:family_history_id>', 
+        methods = ['GET', 'POST'])
+def family_history_profile(family_history_id):
+    family = family_history.query.filter_by(family_history_id = family_history_id)\
+            .join(patient, patient.patient_id == family_history.patient_id)\
+            .add_columns(
+                    patient.patient_id,
+                    patient.first_name,
+                    patient.middle_name,
+                    patient.last_name,
+                    family_history.family_history_id,
+                    family_history.title,
+                    family_history.description
+                ).first_or_404()
+    
+    form = FamilyHistoryForm()
+    if flask.request.method == 'POST' and form.validate_on_submit():
+        family = family_history.query.filter_by(
+                social_history_id = social_history_id).first_or_404()
+        
+        family.title = form.title.data
+        family.description = form.description.data
+
+        db.session.add(family)
+        db.session.commit()
+
+        flask.flash('Update of family history successfull')
+        return flask.redirect(flask.url_for(
+            'profiles.family_history_profile', family_history_id = family_history_id))
+
+    form.title.data = family.title
+    form.description.data = family.description
+    return flask.render_template('profiles/family_history_profile.html', form = form,
+            family = family)
+
+
+@profiles.route('/social_history_profile/<int:social_history_id>', 
+        methods = ['GET', 'POST'])
+def social_history_profile(social_history_id):
+    social = social_history.query.filter_by(social_history_id = social_history_id)\
+            .join(patient, patient.patient_id == social_history.patient_id)\
+            .add_columns(
+                    patient.patient_id,
+                    patient.first_name,
+                    patient.middle_name,
+                    patient.last_name,
+                    social_history.social_history_id,
+                    social_history.title,
+                    social_history.description
+                ).first_or_404()
+    
+    form = SocialHistoryForm()
+    if flask.request.method == 'POST' and form.validate_on_submit():
+        social = social_history.query.filter_by().first_or_404()
+        
+        social.title = form.title.data
+        social.description = form.description.data
+
+        db.session.add(social)
+        db.session.commit()
+
+        flask.flash('Update of social history successfull')
+        return flask.redirect(flask.url_for(
+            'profiles.social_history_profile', social_history_id = social_history_id))
+
+    form.title.data = social.title
+    form.description.data = social.description
+    return flask.render_template('profiles/social_history_profile.html', form = form,
+            social = social)
+
+
+@profiles.route('/medication_profile/<int:medication_profile_id>', 
+        methods = ['GET', 'POST'])
+def medication_profile(medication_profile_id):
+    medication = medication_history.query\
+            .filter_by(medication_history_id = medication_profile_id)\
+            .join(patient, patient.patient_id == medication_history.patient_id)\
+            .add_columns(
+                    patient.patient_id,
+                    patient.first_name,
+                    patient.middle_name,
+                    patient.last_name,
+                    medication_history.medication_history_id,
+                    medication_history.description,
+                    medication_history.remedy,
+                    medication_history.start_date,
+                    medication_history.nature,
+                    medication_history.administration,
+                    medication_history.dosage,
+                    medication_history.frequency,
+                    medication_history.source
+                ).first_or_404()
+    
+    form = MedicationHistoryForm()
+    admin_methods = [
+            'Orally', 'Inhalation', 'Instillation', 'Injection', 
+            'Transdermal', 'Rectal', 'Vaginal', 'Others'
+            ]
+    med_nature = ['Tablets', 'Capsules', 'Liquids', 'Mixture', 'Others']
+    sources = ['prescription', 'over the counter (OTC)']
+    
+    form = MedicationHistoryForm()
+    form.administration.choices = [((item), (item)) for item in admin_methods]
+    form.nature.choices = [((item), (item)) for item in med_nature]
+    form.source.choices = [((item), (item)) for item in sources]
+
+    if flask.request.method == 'POST' and form.validate_on_submit():
+        medication = medication.query.filter_by(
+                medication_history_id = medication_profile_id).first_or_404()
+
+        medication.description = form.description.data
+        medication.remedy = form.remedy.data
+        medication.dosage = form.dosage.data
+        medication.frequency = form.frequency.data
+        medication.nature = form.nature.data
+        medication.administration = form.administration.data
+        medication.start_date = form.start_date.data
+        medication.source = form.source.data
+        
+        db.session.add(medication)
+        db.session.commit()
+
+        flask.flash('Update of medication history successfull.')
+        return flask.redirect(flask.url_for('profiles.medication_profile', 
+            medication_profile_id = medication_profile_id))
+
+    form.description.data = medication.description
+    form.remedy.data = medication.remedy
+    form.dosage.data = medication.dosage
+    form.frequency.data = medication.frequency
+    form.nature.data = medication.nature
+    form.administration.data = medication.administration
+    form.start_date.data = medication.start_date
+    form.source.data = medication.source
+
+    return flask.render_template('profiles/medication_profile.html', 
+            medication = medication, form = form)
+
+
+@profiles.route('/body_part_profile/<int:body_part_id>', methods = ['GET', 'POST'])
+def body_part_profile(body_part_id):
+    part = body_part.query.filter_by(body_part_id = body_part_id).first_or_404()
+
+    form = UpdateBodyPartForm()
+    if flask.request.method == 'POST' and form.validate_on_submit():
+        part = body_part.query.filter_by(body_part_id = body_part_id).first_or_404()
+
+        part.title = form.title.data
+        part.description = form.description.data
+
+        db.session.add(part)
+        db.session.commit()
+
+        flask.flash('Update successfull')
+        return flask.redirect(
+                flask.url_for('profiles.body_part_profile', body_part_id = body_part_id))
+    
+    form.title.data = part.title
+    form.description.data = part.description
+
+    return flask.render_template('profiles/body_part_profile.html', part = part, form = form)
+
+
+@profiles.route('/view_body_part_records')
+def view_body_part_records():
+    page = flask.request.args.get('page', 1, type = int)
+    pagination = body_part.query.order_by(body_part.title.desc())\
+            .paginate(page, flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
+                    error_out = False)
+    parts = pagination.items
+
+    return flask.render_template('profiles/view_body_part_records.html', 
+            pagination = pagination, parts = parts)
 
 
 @profiles.route('/view_health_center_types')
@@ -23,6 +234,18 @@ def view_health_center_types():
 
     return flask.render_template('profiles/view_health_center_types.html',
             center_types = center_types, pagination = pagination)
+
+
+@profiles.route('/view_health_specialist_types')
+def view_health_specialist_types():
+    page = flask.request.args.get('page', 1, type = int)
+    pagination = health_specialist_type.query.order_by(health_specialist_type.title.desc())\
+            .paginate(page, flask.current_app.config['FLASKY_POSTS_PER_PAGE'], error_out = False)
+    specialities = pagination.items
+
+    return flask.render_template('profiles/view_health_specialist_types.html', 
+            specialities = specialities, pagination = pagination)
+
 
 
 @profiles.route('/view_health_practitioner_types')
@@ -86,6 +309,13 @@ def history(patient_id):
     return response
 
 
+@profiles.route('/conditions/<int:patient_id>')
+def conditions(patient_id):
+    response = flask.make_response(
+        flask.redirect(flask.url_for('profiles.patient_profile', patient_id = patient_id)))
+    response.set_cookie('tab_var', '4', max_age = 60*60)
+    return response
+
 @profiles.route('/medical/<int:patient_id>')
 def medical(patient_id):
     response = flask.make_response(
@@ -112,12 +342,54 @@ def patient_profile(patient_id):
 
     #personal details
     if tab_variable == 0:
+        document_form = DocumentUploadForm()
+        
+        types = patient_document_type.query.order_by(patient_document_type.title.desc()).all()
+        document_form.type_id.choices = [((type.patient_document_type_id), (type.title)) for type in types] 
+        
+        if document_form.validate_on_submit():
+            uploaded_file = document_form.file.data
+            filename = secure_filename(uploaded_file.filename)
+
+            folder = os.path.join(flask.current_app.config['DOCUMENT_UPLOAD_PATH'], 'patients')
+            if not os.path.isdir(folder):
+                os.makedirs(folder)
+
+            #save file on server
+            uploaded_file.save(os.path.join(folder, filename))
+
+            #update database
+            Document = patient_document(
+                    filename = filename,
+                    patient_document_type_id = document_form.type_id.data,
+                    patient_id = patient_id
+                    )
+            db.session.add(Document)
+            db.session.commit()
+
+            flask.flash('Document registered successfully.')
+            return flask.redirect(flask.url_for('profiles.patient_profile', 
+                patient_id = patient_id))
+
         phone_numbers = patient_phone_no.query.filter_by(patient_id = patient_id).all()
+        kins = next_of_kin.query.filter_by(patient_id = patient_id).all()
+        documents = patient_document.query.filter_by(patient_id = patient_id)\
+                .join(
+                        patient_document_type, 
+                        patient_document_type.patient_document_type_id == patient_document.patient_document_type_id)\
+                .add_columns(
+                        patient_document.patient_document_id,
+                        patient_document.filename,
+                        patient_document.date_created,
+                        patient_document_type.patient_document_type_id,
+                        patient_document_type.title
+                        ).all()
         return flask.render_template('profiles/patient_profile.html', patient = Patient,
-                tab_variable = tab_variable, phone_numbers = phone_numbers)
+                tab_variable = tab_variable, phone_numbers = phone_numbers, kins = kins,
+                documents = documents, form = document_form)
     
     #medical history details
-    if tab_variable == 1:
+    if tab_variable == 4:
         #---------------------------------------------------------#
         #                       ALLERGIES                         #
         #---------------------------------------------------------#
@@ -134,7 +406,7 @@ def patient_profile(patient_id):
             db.session.commit()
             flask.flash('Allergy added successfully.')
 
-            return flask.redirect(flask.url_for('profiles.medical', patient_id = patient_id))
+            return flask.redirect(flask.url_for('profiles.conditions', patient_id = patient_id))
 
         allergies = allergy.query.filter_by(patient_id = patient_id)\
                 .order_by(allergy.description.asc()).all()
@@ -145,13 +417,123 @@ def patient_profile(patient_id):
             allergy_symptoms = allergy_symptom.query.filter_by(allergy_id = _allergy.allergy_id).all()
             symptoms.update({_allergy.allergy_id: allergy_symptoms})
 
+        #---------------------------------------------------------#
+        #                       SURGERIES                         #
+        #---------------------------------------------------------#
+
+        surgery_form = RegisterSurgeryForm()
+
+        body_parts = body_part.query.order_by(body_part.title.desc()).all()
+        surgery_form.body_part_id.choices = [((part.body_part_id), (part.title)) for part in body_parts]
+    
+        if flask.request.method == 'POST' and surgery_form.validate_on_submit():
+            Surgery = surgery(
+                    description = surgery_form.description.data,
+                    status = surgery_form.status.data,
+                    date = surgery_form.date.data,
+                    body_part_id = surgery_form.body_part_id.data,
+                    patient_id = patient_id,
+                    )
+
+            db.session.add(Surgery)
+            db.session.commit()
+
+            flask.flash('Surgery recorded successfully')
+            return flask.redirect(flask.url_for('profiles.conditions', patient_id = patient_id))
+
+        surgeries = surgery.query.filter_by(patient_id = patient_id)\
+                .join(body_part, body_part.body_part_id == surgery.body_part_id)\
+                .add_columns(
+                        surgery.surgery_id,
+                        surgery.description,
+                        surgery.status,
+                        surgery.date,
+                        body_part.body_part_id,
+                        body_part.title
+                    ).order_by(surgery.date.desc()).all()
+
         return flask.render_template('profiles/patient_profile.html', patient = Patient,
                 allergies = allergies, symptoms = symptoms, allergy_form = allergy_form,
-                tab_variable = tab_variable)
+                surgeries = surgeries, surgery_form = surgery_form, tab_variable = tab_variable)
     
     #other details
+
+    if tab_variable == 1:
+        socials = social_history.query.filter_by(patient_id = patient_id)\
+                .order_by(social_history.title.desc()).all()
+        social_form = SocialHistoryForm()
+        if flask.request.method == 'POST' and social_form.validate_on_submit():
+            social = social_history(
+                    title = social_form.title.data,
+                    description = social_form.description.data,
+                    patient_id = patient_id
+                    )
+            db.session.add(social)
+            db.session.commit()
+
+            flask.flash('Social history updated successfully')
+            return flask.redirect(
+                    flask.url_for('profiles.patient_profile', patient_id = patient_id))
+        
+        families = family_history.query.filter_by(patient_id = patient_id)\
+                .order_by(family_history.title.desc()).all()
+        family_form = FamilyHistoryForm()
+        if flask.request.method == 'POST' and family_form.validate_on_submit():
+            family = family_history(
+                    title = family_form.title.data,
+                    description = family_form.description.data,
+                    patient_id = patient_id
+                    )
+            db.session.add(family)
+            db.session.commit()
+
+            flask.flash('Family history updated successfully')
+            return flask.redirect(
+                    flask.url_for('profiles.patient_profile', patient_id = patient_id))
+
+        return flask.render_template('profiles/patient_profile.html', patient = Patient,
+                family_form = family_form, social_form = social_form,
+                socials = socials, families = families, tab_variable = tab_variable)
+    
+
     if tab_variable == 2:
+        medication = medication_history.query.filter_by(patient_id = patient_id)\
+                .order_by(medication_history.medication_history_id.desc()).limit(15)
+        
+        #Select field data
+        admin_methods = [
+                'Orally', 'Inhalation', 'Instillation', 'Injection', 
+                'Transdermal', 'Rectal', 'Vaginal', 'Others'
+                ]
+        med_nature = ['Tablets', 'Capsules', 'Liquids', 'Mixture', 'Others']
+        sources = ['prescribed', 'over the counter (OTC)']
+
+        medication_form = MedicationHistoryForm()
+        medication_form.administration.choices = [((item), (item)) for item in admin_methods]
+        medication_form.nature.choices = [((item), (item)) for item in med_nature]
+        medication_form.source.choices = [((item), (item)) for item in sources]
+
+        if flask.request.method == 'POST' and medication_form.validate_on_submit():
+            Medication = medication_history(
+                    description = medication_form.description.data,
+                    remedy = medication_form.remedy.data,
+                    dosage = medication_form.dosage.data,
+                    frequency = medication_form.frequency.data,
+                    start_date = medication_form.start_date.data,
+                    administration = medication_form.administration.data,
+                    nature = medication_form.nature.data,
+                    source = medication_form.source.data,
+                    patient_id = patient_id
+                    )
+            db.session.add(Medication)
+            db.session.commit()
+
+            flask.flash('Medication history updated successfully')
+            return flask.redirect(
+                    flask.url_for('profiles.patient_profile', patient_id = patient_id))
+
         return flask.render_template('profiles/patient_profile.html', patient = Patient, 
+                medication = medication, medication_form = medication_form, 
                 tab_variable = tab_variable)
     
     #pregnancies details
@@ -167,9 +549,29 @@ def patient_profile(patient_id):
             due_date = datetime.strptime(str(item.due_date), '%Y-%m-%d')
 
             dates.update({item.pregnancy_id : [conception_date, due_date]})
-        
+
+        miscarriages = miscarriage.query.filter_by(patient_id = patient_id).all()
+
+        miscarriage_form = RegisterMiscarriageForm()
+
+        trimesters = ['first', 'second', 'third']
+        miscarriage_form.trimester.choices = [((item), (item)) for item in trimesters]
+
+        if miscarriage_form.validate_on_submit():
+            Miscarriage = miscarriage(
+                    trimester = miscarriage_form.trimester.data,
+                    cause = miscarriage_form.cause.data,
+                    patient_id = patient_id
+                    )
+            db.session.add(Miscarriage)
+            db.session.commit()
+
+            return flask.redirect(
+                    flask.url_for('profiles.patient_profile', patient_id = patient_id))
+
         return flask.render_template('profiles/patient_profile.html', patient = Patient,
-                tab_variable = tab_variable, pregnancies = pregnancies, dates = dates)
+                tab_variable = tab_variable, pregnancies = pregnancies, dates = dates,
+                miscarriage_form = miscarriage_form, miscarriages = miscarriages)
 
     return flask.render_template('profiles/patient_profile.html', patient = Patient)
 
@@ -264,6 +666,31 @@ def pregnancy_profile(pregnancy_id):
                                     error_out = False)
     checkups = pagination.items
     return flask.render_template('profiles/pregnancy_profile.html', profile = profile, checkups = checkups)
+
+
+@profiles.route('/list_of_health_specialists')
+def list_of_health_specialists():
+    page = flask.request.args.get('page', 1, type = int)
+    
+    pagination = health_specialist.query\
+        .join(health_specialist_type, 
+                health_specialist_type.health_specialist_type_id == health_specialist.health_specialist_type_id)\
+        .add_columns(
+                health_specialist.practitioner_id,
+                health_specialist.first_name,
+                health_specialist.middle_name,
+                health_specialist.last_name,
+                health_specialist.gender,
+                health_specialist.email_address,
+                health_specialist_type.health_specialist_type_id,
+                health_specialist_type.title,
+                health_specialist_type.health_center
+            ).order_by(health_specialist.practitioner_id.desc()).paginate(page,
+                    flask.current_app.config['FLASKY_POSTS_PER_PAGE'], error_out = False)
+    specialists = pagination.items
+
+    return flask.render_template('profiles/list_of_health_specialists.html', 
+            pagination = pagination, specialists = specialists)
 
 
 @profiles.route('/list_of_health_practitioners')

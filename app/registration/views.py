@@ -5,13 +5,16 @@ from . import registration
 from .. import db
 
 from .forms import (RegisterPatientForm, RegisterHealthCenterTypeForm, RegisterHealthCenterForm, 
-        ImageForm, RegisterDepartmentForm, RegisterHealthPractitionerForm,
+        ImageForm, RegisterDepartmentForm, RegisterHealthPractitionerForm, RegisterBodyPartForm,
         RegisterHealthPractitionerTypeForm, RegisterPatientPhoneNoForm, RegisterPregnancyForm,
-        RegisterHealthCenterContactForm, RegisterHealthPractitionerPhoneNoForm)
+        RegisterHealthCenterContactForm, RegisterHealthPractitionerPhoneNoForm,
+        RegisterKinForm, RegisterPatientDocumentTypeForm, RegisterHealthSpecialistTypeForm,
+        RegisterHealthSpecialistForm)
 
 from ..models import (Permission, patient, health_center_type, health_center, patient_phone_no, 
         health_practitioner, health_center_department, pregnancy, health_practitioner_type, hc_contact,
-        health_practitioner_phone_no)
+        health_practitioner_phone_no, body_part, next_of_kin, patient_document_type,
+        health_specialist_type, health_specialist)
 
 def validate_image(stream):
     header = stream.read(512)
@@ -22,6 +25,25 @@ def validate_image(stream):
         return None
 
     return '.' + (format if format == 'jpeg' else 'jpg')
+
+
+@registration.route('/register_body_part', methods = ['GET', 'POST'])
+def register_body_part():
+    form = RegisterBodyPartForm()
+    if form.validate_on_submit():
+        Body_Part = body_part(
+                title = form.title.data,
+                description = form.description.data
+                )
+
+        db.session.add(Body_Part)
+        db.session.commit()
+
+        flask.flash('Body part registered successfully.')
+        return flask.redirect(flask.url_for('registration.register_body_part'))
+
+    return flask.render_template('registration/register_body_part.html', form = form)
+
 
 @registration.route('/register_health_center_contact/<int:health_center_id>', 
         methods = ['GET', 'POST'])
@@ -71,6 +93,31 @@ def register_health_practitioner_phone_no(health_practitioner_id):
     return flask.render_template('registration/register_health_practitioner_phone_no.html', 
             form = form)
 
+@registration.route('/register_next_of_kin/<int:patient_id>', methods = ['GET', 'POST'])
+def register_next_of_kin(patient_id):
+    form = RegisterKinForm()
+    form.gender.choices = [(('female'), ('female')), (('male'), ('male'))]
+    
+    if form.validate_on_submit():
+        Kin = next_of_kin(
+                id_no = form.id_no.data,
+                first_name = form.first_name.data,
+                middle_name = form.middle_name.data,
+                last_name = form.last_name.data,
+                gender = form.gender.data,
+                phone_no = form.phone_no.data,
+                relationship = form.relationship.data,
+                location_address = form.location_address.data,
+                patient_id = patient_id
+                )
+        db.session.add(Kin)
+        db.session.commit()
+
+        flask.flash(f'{form.first_name.data} registered successfully.')
+        return flask.redirect(
+                flask.url_for('registration.register_next_of_kin', patient_id = patient_id))
+    return flask.render_template('registration/register_next_of_kin.html', form = form)
+
 
 @registration.route('/register_patient_phone_no/<int:patient_id>', methods = ['GET', 'POST'])
 def register_patient_phone_no(patient_id):
@@ -92,6 +139,23 @@ def register_patient_phone_no(patient_id):
                 flask.url_for('profiles.patient_profile', patient_id = Patient.patient_id))
 
     return flask.render_template('registration/register_patient_phone_no.html', form = form)
+
+
+@registration.route('/register_patient_document_type', methods = ['GET', 'POST'])
+def register_patient_document_type():
+    form = RegisterPatientDocumentTypeForm()
+    if form.validate_on_submit():
+        Document_Type = patient_document_type(
+                title = form.title.data,
+                description = form.description.data
+                )
+        db.session.add(Document_Type)
+        db.session.commit()
+
+        flask.flash('Patient document type registered successfully.')
+        return flask.redirect(flask.url_for('registration.register_patient_document_type'))
+    return flask.render_template('registration/register_patient_document_type.html', 
+            form = form)
 
 
 @registration.route('/register_pregnancy/<int:patient_id>', methods = ['GET', 'POST'])
@@ -364,6 +428,60 @@ def register_health_practitioner_type():
         return flask.redirect(flask.url_for('registration.register_health_practitioner_type'))
 
     return flask.render_template('registration/register_health_practitioner_type.html', form = form)
+
+
+@registration.route('/register_health_specialist_type', methods = ['GET', 'POST'])
+def register_health_specialist_type():
+    form = RegisterHealthSpecialistTypeForm()
+
+    if form.validate_on_submit():
+        Specialist_Type = health_specialist_type(
+                title = form.title.data,
+                description = form.description.data
+                )
+
+        db.session.add(Specialist_Type)
+        db.session.commit()
+
+        flask.flash(f'{form.title.data} registered successfully')
+        return flask.redirect(flask.url_for('registration.register_health_specialist_type'))
+
+    return flask.render_template('registration/register_health_specialist_type.html', form = form)
+
+
+@registration.route('/register_health_specialist', methods = ['GET', 'POST'])
+def register_health_specialist():
+    form = RegisterHealthSpecialistForm()
+    specialist_types = health_specialist_type.query.all()
+    countries_list = [((country.name), (country.name)) for country in iso3166.countries]
+    types = [((item.health_specialist_type_id), (item.title)) for item in specialist_types]
+
+    form.health_specialist_type_id.choices = types
+    form.nationality.choices = countries_list
+    form.gender.choices = [(('female'), ('female')), (('male'), ('male'))]
+
+    if form.validate_on_submit():
+        Health_Specialist = health_specialist(
+                first_name = form.first_name.data,
+                middle_name = form.middle_name.data,
+                last_name = form.last_name.data,
+                gender = form.gender.data,
+                email_address = form.email_address.data,
+                location_address = form.location_address.data,
+                nationality = form.nationality.data,
+                national_id_no = form.national_id_no.data,
+                health_specialist_type_id = form.health_specialist_type_id.data,
+                practitioner_id = form.practitioner_id.data,
+                health_center = form.health_center.data
+        )
+        db.session.add(Health_Specialist)
+
+        db.session.commit()
+        flask.flash(f'{form.first_name.data} {form.middle_name.data} {form.last_name.data} registered successfully')
+        return flask.redirect(flask.url_for('registration.register_health_specialist', 
+            department_id = department_id))
+
+    return flask.render_template('registration/register_health_specialist.html', form = form)
 
 
 @registration.route('/register_health_practitioner/<int:department_id>', 

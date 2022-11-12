@@ -432,13 +432,13 @@ class patient_phone_no(db.Model):
         return f'<{self.patient_phone_no_id}>'
 
 
-class health_speciality_type(db.Model):
+class health_specialist_type(db.Model):
     """
     Gives a short description of what associated health specialists do
     """
 
-    __tablename__ = 'health_speciality_type'
-    health_speciality_type_id = db.Column(db.Integer, primary_key = True)
+    __tablename__ = 'health_specialist_type'
+    health_specialist_type_id = db.Column(db.Integer, primary_key = True)
     
     title = db.Column(db.String(255), nullable = False, unique = True)
     description = db.Column(db.Text, nullable = False)
@@ -451,7 +451,7 @@ class health_speciality_type(db.Model):
     specialists = db.relationship('health_specialist', backref = 'type', lazy = 'dynamic')
     
     def __repr__(self):
-        return f'<{self.health_speciality_type_id}>'
+        return f'<{self.health_specialist_type_id}>'
 
 
 class health_specialist(db.Model):
@@ -478,8 +478,8 @@ class health_specialist(db.Model):
     health_center = db.Column(db.String(255), nullable = False)
 
     #relationships
-    health_speciality_type_id = db.Column(db.Integer, 
-        db.ForeignKey('health_speciality_type.health_speciality_type_id'), nullable = False)
+    health_specialist_type_id = db.Column(db.Integer, 
+        db.ForeignKey('health_specialist_type.health_specialist_type_id'), nullable = False)
 
     patients = db.relationship('patient_specialist_assignment', backref = 'specialist', 
             lazy = 'dynamic')
@@ -588,7 +588,7 @@ class miscarriage(db.Model):
     """
 
     __tablename__ = 'miscarriage'
-    complication_id = db.Column(db.Integer, primary_key = True)
+    miscarriage_id = db.Column(db.Integer, primary_key = True)
 
     trimester = db.Column(db.Integer, default = 1, nullable = False)
     cause = db.Column(db.Text, nullable = False)
@@ -603,6 +603,9 @@ class miscarriage(db.Model):
 class family_history(db.Model):
     __tablename__ = 'family_history'
     family_history_id = db.Column(db.Integer, primary_key = True)
+
+    title = db.Column(db.String(255), nullable = False)
+    description = db.Column(db.Text, nullable = False)
 
     date_created = db.Column(db.DateTime, default = datetime.utcnow)
     last_updated = db.Column(db.DateTime, default = datetime.utcnow,
@@ -622,6 +625,9 @@ class social_history(db.Model):
 
     __tablename__ = 'social_history'
     social_history_id = db.Column(db.Integer, primary_key = True)
+
+    title = db.Column(db.String(255), nullable = False)
+    description = db.Column(db.Text, nullable = False)
 
     #relationships
     patient_id = db.Column(db.Integer, db.ForeignKey('patient.patient_id'), nullable = False)
@@ -643,11 +649,12 @@ class medication_history(db.Model):
 
     description = db.Column(db.String(255), nullable = False)
     remedy = db.Column(db.String(255), nullable = False)
-    dosage = db.Column(db.String(), nullable = False)
-    frequency = db.Column(db.String(128), nullable = False)
-    start_date = db.Column(db.String(64), nullable = False)
+    dosage = db.Column(db.String(64), nullable = False)
+    frequency = db.Column(db.String(64), nullable = False)
+    start_date = db.Column(db.DateTime, default = datetime.utcnow)
     administration = db.Column(db.String(255), nullable = False)
-    nature = db.Column(db.String(255), default = 'prescribed', 
+    source = db.Column(db.String(120), default = 'prescribed', nullable = False)
+    nature = db.Column(db.String(255), default = 'tablets', 
             nullable = False)
     
     #relationships
@@ -669,7 +676,7 @@ class pregnancy(db.Model):
     __tablename__ = 'pregnancy'
     pregnancy_id = db.Column(db.Integer, primary_key = True)
     
-    conception_date = db.Column(db.Integer, nullable = False)
+    conception_date = db.Column(db.Date, default = datetime.utcnow, nullable = False)
     due_date = db.Column(db.Date, default = datetime.utcnow, nullable = False)
     
     #relationships

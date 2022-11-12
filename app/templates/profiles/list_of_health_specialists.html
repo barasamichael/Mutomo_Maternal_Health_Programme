@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}
+    {{super()}}
+    List of Registered Health Specialists
+{% endblock title%}
+
+{% block page_content %}
+<div class "page-header">
+	<h3>List of Registered Health Specialists</h3>
+</div>
+<div>
+	<table class = "table table-hover table-responsive table-striped">
+		<thead class = "thead thead-dark">
+			<tr>
+				<th>Practitioner ID</th>
+				<th>Name</th>
+				<th>Gender</th>
+				<th>Health Center</th>
+				<th>Speciality</th>
+				<th>Email Address</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for specialist in specialists %}
+			<tr>
+				<td>{{specialist.practitioner_id}}</td>
+				<td>
+					<a href = "{{url_for('profiles.health_specialist_profile', health_specialist_id = specialist.health_specialist_id)}}">
+						{{specialist.first_name}} {{specialist.middle_name}} {{specialist.last_name}}
+					</a>
+				</td>
+				<td>{{specialist.gender}}</td>
+				<td>{{specialist.health_center}}</td>
+				<td>{{specialist.title}}</td>
+				<td>{{specialist.email_address}}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+
+<div class = "pagination">
+	{{ macros.pagination_widget(pagination, 'profiles.list_of_health_specialists')}}
+</div>
+{% endblock page_content %}

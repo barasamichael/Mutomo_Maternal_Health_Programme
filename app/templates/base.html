@@ -64,6 +64,11 @@
 					</a>
 				 </li>
 				 <li>
+					 <a href = "{{ url_for('registration.register_health_specialist') }}">
+						 Register Health Specialist
+					 </a>
+				 </li>
+				 <li>
 					 <a href = "{{ url_for('registration.register_health_center') }}">
 						 Register Health Center
 					 </a>
@@ -74,9 +79,24 @@
 					 </a>
 				 </li>
 				 <li>
+					 <a href = "{{ url_for('registration.register_health_specialist_type') }}">
+						 Register Health Specialist Type
+					 </a>
+				 </li>
+				 <li>
 					 <a href = "{{ url_for('checkups.register_checkup_document_type') }}">
 						 Register CheckUp Document Type 
 					 </a>
+				 </li>
+				 <li>
+					 <a href = "{{ url_for('registration.register_body_part') }}">
+						Register Body Part
+					</a>
+				 </li>
+				 <li>
+					 <a href = "{{ url_for('registration.register_patient_document_type') }}">
+						Register Patient Document Type
+					</a>
 				 </li>
                          </ul>
                  </li>
@@ -103,8 +123,18 @@
 					 </a>
 				 </li>
 				 <li>
+					 <a href = "{{ url_for('profiles.list_of_health_specialists') }}">
+						 Health Specialists
+					 </a>
+				 </li>
+				 <li>
 					 <a href = "{{ url_for('profiles.list_of_health_practitioners') }}">
-						 Health Practitioner
+						 Health Practitioners
+					 </a>
+				 </li>
+				 <li>
+					 <a href = "{{ url_for('profiles.view_health_specialist_types') }}">
+						 Health Specialist Types
 					 </a>
 				 </li>
 				 <li>

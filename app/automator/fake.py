@@ -6,7 +6,198 @@ from sqlalchemy.exc import IntegrityError
 from .. import db
 from ..models import (health_center, health_center_type, health_center_department,
         department_schedule, department_service, patient, patient_document, 
-        health_practitioner, health_practitioner_type) 
+        health_practitioner, health_practitioner_type, patient_document_type, social_history,
+        miscarriage, medication_history, body_part, surgery, pregnancy) 
+
+
+def add_social_history():
+    from .list_of_social_histories import socials
+
+    patients = patient.query.all()
+
+    for Patient in patients:
+        for i in range(randint(1, 5)):
+            data = socials[randint(0, len(socials) - 1)]
+            Social_History = social_history(
+                    title = data[0],
+                    description = data[1],
+                    patient_id = Patient.patient_id
+                    )
+            db.session.add(Social_History)
+            db.session.commit()
+            print('Registration of social history record {patient.first_name} successfull')
+    print("Registration of social histories complete with status done")
+
+
+def add_body_part():
+    from .list_of_body_parts import parts
+    
+    for part in parts:
+        Body_Part = body_part(
+                title = part[0],
+                description = part[1]
+                )
+        db.session.add(Body_Part)
+        db.session.commit()
+        print('Registration of body part successfull')
+    
+    print('Registration of body parts complete with status done...')
+
+
+def add_surgery():
+    from .list_of_surgeries import surgeries
+
+    patients = patient.query.all()
+    fake = Faker(locale = 'en_CA')
+
+    for i in range(int(0.4 * len(patients))):
+        patient_id = randint(1, len(patients))
+        patient_surgeries = surgery.query.filter_by(patient_id = patient_id).all()
+        
+        #a single patient cannot have more than five surgeries
+        if len(patient_surgeries) > 5:
+            continue
+
+        #obtain a random surgery
+        current_date = datetime.date(1980, 1, 1)
+        record = surgeries[randint(0, len(surgeries) - 1)]
+        for i in range(1, 5):
+            Surgery = surgery(
+                    description = record[0],
+                    status = record[1],
+                    body_part_id = record[2],
+                    patient_id = patient_id
+                    )
+            #ensure dates rhyme
+            while True:
+                date = fake.date_of_birth()
+                if date >= current_date and date <= datetime.date(2007, 12, 12):
+                    Surgery.date = date
+                    current_date = date
+                    break
+
+            db.session.add(Surgery)
+            db.session.commit()
+
+            print(f"Surgery record #{i} successfull.")
+
+    print('Registration of surgeries complete with the status doene...')
+
+
+def add_medication_history():
+    from .list_of_medications import medications, sources
+    patients = patient.query.all()
+    
+    for i in range(randint(1, (patients*4))):
+        patient_id = randint(1, len(patients))
+
+        medication = medication_history.query.filter_by(patient_id = patient_id).all()
+        if len(medication) > 5:
+            continue
+
+        medicine = medications[randint(0, len(medications) - 1)]
+        Medication = medication_history(
+                description = medicine[0],
+                remedy = medicine[1],
+                dosage = medicine[2],
+                frequency = medicine[3],
+                administration = medicine[4],
+                source = sources[randint(0, len(sources) - 1)],
+                patient_id = patient_id
+                )
+        
+        while True:
+            date = fake.date_of_birth()
+            if date >= datetime.date(1980, 1, 1) and date <= datetime.date(2007, 12, 12):
+                Medication.start_date = date
+                break
+        
+        db.session.add(Medication)
+        db.session.commit()
+        print(f'Registration of medication history record #{i} successfull.')
+
+    print('Registration of medication histories complete with status done...')
+
+
+def register_miscarriage(count = 20):
+    from .list_of_miscarriage_causes import causes
+    patients = patient.query.all()
+    trimesters = ['First', 'Second']
+    
+    for i in range(count):
+        patient_id = randint(1, len(patients))
+
+        #ensure that we don't have more than one record
+        Miscarriage = miscarriage.query.filter_by(patient_id = patient_id).first()
+        if Miscarriage:
+            continue
+
+        #store our miscarriage record
+        Miscarriage = miscarriage(
+                cause = causes[randint(0, len(causes) - 1)],
+                trimester = trimesters[randint(0, len(trimesters) - 1)],
+                patient_id = patient_id 
+                )
+        db.session.add(Miscarriage)
+        db.session.commit()
+        print(f'Miscarriage record #{i} done successfully')
+
+    print("Registration of miscarriages complete with status done...")
+
+
+def register_pregnancy(count = 100):
+    fake = Faker(locale = 'en_CA')
+    patients = patient.query.all()
+
+    for i in range(count):
+        Pregnancy = pregnancy(patient_id = randint(1, len(patients)))
+        #generate a realistic date
+        while True:
+            date = fake.date_of_birth()
+
+            if date >= datetime.date(1980, 1, 1) and date <= datetime.date(2007, 12, 12):
+                Pregnancy.conception_date = date
+                Pregnancy.due_date = date + datetime.timedelta(hours = 24 * 9 * 30)
+                break
+        db.session.add(Pregnancy)
+        db.session.commit()
+
+        print(f'Registration of pregnancy record #{i} complete')
+
+    print("Registration of pregnancies complete with status done...")
+
+
+def add_patient_documents():
+    patients = patient.query.all()
+    document_types = patient_document_type.query.all()
+
+    for Patient in patients:
+        for i in range(0, len(document_types) - 1):
+            Document = patient_document(
+                filename = "basic_document.pdf",
+                patient_document_type_id = randint(0, len(document_types) - 1),
+                patient_id = Patient.patient_id
+                )
+            db.session.add(Document)
+            db.session.commit()
+            print("Registration of patient document complete with status done")
+
+    print("Registration of patient documents complete with status done")
+
+
+def add_patient_document_types():
+    from .list_of_document_types import document_types
+    for item in document_types:
+        Document_Type = patient_document_type(
+                title = item[0],
+                description = item[1]
+                )
+        db.session.add(Document_Type)
+        db.session.commit()
+
+        print(f'{item[0]} registered successfully...')
+    print('Registration of patient document types complete with status done...')
+
 
 def add_health_practitioners():
     fake = Faker(locale = 'en_CA')
