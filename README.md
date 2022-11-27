@@ -17,3 +17,10 @@ The Kenyan government under the umbrella of the Beyond Zero Campaign, spearheade
 
 ### Overview
 This is where our application comes in. An application that brings together major players in the maternal health sector. 
+This includes health centers, health center departments, health practitioners, potential mothers, born babies, etc. With this integrationit is now possible for mobile availability of statistics in the health care sector.
+
+This application does gathering of data for the betterment of the sector and through the analysis of this data, relevant entities are able to identify patterns in the data with specific emphasis on Africa as a continent. As much as we desire to adapt to the methodologies of the West in terms of medical care, it is important to identitfy the need for a custom health structure for Africa as a continent. It is through the adaptation of such a system that we are able to adapt reliably to the needs of our people.
+
+The system is able to collect data during the entire period of a woman's pregnancy and even offer post-antenatal follow up. This is to eliminate the inherent high child mortality rates.
+
+### 
