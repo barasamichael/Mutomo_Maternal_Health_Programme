@@ -27,8 +27,8 @@
 				{% for checkup in checkups %}
 				<tr>
 					<td>
-						<a href = "">
-							{{checkup.checkup_id}}
+						<a href = "{{ url_for('checkups.checkup_profile', checkup_id = checkup.checkup_id) }}">
+							{{ checkup.checkup_id }}
 						</a>
 					</td>
 					<td>{{ moment(checkup.date_created).format('LLLL') }}</td>

@@ -21,6 +21,38 @@ def validate_image(stream):
     return '.' + (format if format == 'jpeg' else 'jpg')
 
 
+@profiles.route('/documents/<int:checkup_id>')
+def checkup_documents(checkup_id):
+    response = flask.make_response(
+        flask.redirect(flask.url_for('checkups.checkup_profile', checkup_id = checkup_id)))
+    response.set_cookie('tab_var', '0', max_age = 60*60)
+    return response
+
+
+@profiles.route('/diagnosis/<int:checkup_id>')
+def checkup_diagnosis(checkup_id):
+    response = flask.make_response(
+        flask.redirect(flask.url_for('checkups.checkup_profile', checkup_id = checkup_id)))
+    response.set_cookie('tab_var', '1', max_age = 60*60)
+    return response
+
+
+@profiles.route('/recommendations/<int:checkup_id>')
+def checkup_recommendations(checkup_id):
+    response = flask.make_response(
+        flask.redirect(flask.url_for('checkups.checkup_profile', checkup_id = checkup_id)))
+    response.set_cookie('tab_var', '2', max_age = 60*60)
+    return response
+
+
+@profiles.route('/affirmatives/<int:checkup_id>')
+def checkup_affirmatives(checkup_id):
+    response = flask.make_response(
+        flask.redirect(flask.url_for('checkups.checkup_profile', checkup_id = checkup_id)))
+    response.set_cookie('tab_var', '3', max_age = 60*60)
+    return response
+
+
 @checkups.route('/checkup_profile/<int:checkup_id>', methods = ['GET', 'POST'])
 def checkup_profile(checkup_id):
     profile = checkup.query.filter_by(checkup_id = checkup_id)\
@@ -43,6 +75,42 @@ def checkup_profile(checkup_id):
                     health_practitioner.middle_name.label('health_middle_name'),
                     health_practitioner.last_name.label('health_last_name'),
                 ).first_or_404()
+    
+    tab_variable = 0
+    if flask.request.cookies.get('tab_var') is not None:
+        tab_variable = int(flask.request.cookies.get('tab_var'))
+
+    #personal details
+    if tab_variable == 0:
+        document_form = DocumentUploadForm()
+        
+        types = checkup_document_type.query.order_by(checkup_document_type.title.desc()).all()
+        document_form.type_id.choices = [((type.checkup_document_type_id), (type.title)) for type in types] 
+        
+        if document_form.validate_on_submit():
+            uploaded_file = document_form.file.data
+            filename = secure_filename(uploaded_file.filename)
+
+            folder = os.path.join(flask.current_app.config['DOCUMENT_UPLOAD_PATH'], 'checkups')
+            if not os.path.isdir(folder):
+                os.makedirs(folder)
+
+            #save file on server
+            uploaded_file.save(os.path.join(folder, filename))
+
+            #update database
+            Document = checkup_document(
+                    filename = filename,
+                    checkup_document_type_id = document_form.type_id.data,
+                    checkup_id = checkup_id
+                    )
+            db.session.add(Document)
+            db.session.commit()
+
+            flask.flash('Checkup document registered successfully.')
+            return flask.redirect(flask.url_for('checkups.checkup_profile', 
+                checkup_id = checkup_id))
+
     return flask.render_template('checkups/checkup_profile.html', profile = profile)
 
 

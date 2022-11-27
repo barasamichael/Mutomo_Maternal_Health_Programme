@@ -13,7 +13,7 @@ from ..models import (Permission, patient, health_center, health_center_type,
         patient_phone_no, health_practitioner_phone_no, pregnancy, checkup, next_of_kin,
         hc_contact, allergy, allergy_symptom, social_history, medication_history, 
         miscarriage, surgery, body_part, family_history, social_history, patient_document_type,
-        patient_document)
+        patient_document, health_specialist_type)
 
 @profiles.route('/patient_document_type_profile/<int:type_id>', methods = ['GET', 'POST'])
 def patient_document_type_profile(type_id):
@@ -498,7 +498,7 @@ def patient_profile(patient_id):
 
     if tab_variable == 2:
         medication = medication_history.query.filter_by(patient_id = patient_id)\
-                .order_by(medication_history.medication_history_id.desc()).limit(15)
+                .order_by(medication_history.start_date.desc()).limit(15)
         
         #Select field data
         admin_methods = [

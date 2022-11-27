@@ -87,34 +87,37 @@ def add_surgery():
 def add_medication_history():
     from .list_of_medications import medications, sources
     patients = patient.query.all()
-    
-    for i in range(randint(1, (patients*4))):
+
+    fake = Faker(locale = 'en_CA')
+    for i in range(randint(1, (len(patients)*4))):
         patient_id = randint(1, len(patients))
 
-        medication = medication_history.query.filter_by(patient_id = patient_id).all()
-        if len(medication) > 5:
-            continue
+        for i in range(7, 15):
+            medication = medication_history.query.filter_by(patient_id = patient_id).all()
+            if len(medication) > 15:
+                continue
 
-        medicine = medications[randint(0, len(medications) - 1)]
-        Medication = medication_history(
-                description = medicine[0],
-                remedy = medicine[1],
-                dosage = medicine[2],
-                frequency = medicine[3],
-                administration = medicine[4],
-                source = sources[randint(0, len(sources) - 1)],
-                patient_id = patient_id
-                )
+            medicine = medications[randint(0, len(medications) - 1)]
+            Medication = medication_history(
+                    description = medicine[0],
+                    remedy = medicine[1],
+                    dosage = medicine[2],
+                    frequency = medicine[3],
+                    administration = medicine[4],
+                    nature = medicine[5],
+                    source = sources[randint(0, len(sources) - 1)],
+                    patient_id = patient_id
+                    )
         
-        while True:
-            date = fake.date_of_birth()
-            if date >= datetime.date(1980, 1, 1) and date <= datetime.date(2007, 12, 12):
-                Medication.start_date = date
-                break
+            while True:
+                date = fake.date_of_birth()
+                if date >= datetime.date(2010, 1, 1) and date <= datetime.date(2022, 12, 12):
+                    Medication.start_date = date
+                    break
         
-        db.session.add(Medication)
-        db.session.commit()
-        print(f'Registration of medication history record #{i} successfull.')
+            db.session.add(Medication)
+            db.session.commit()
+            print(f'Registration of medication history record #{i} successfull.')
 
     print('Registration of medication histories complete with status done...')
 
@@ -450,5 +453,6 @@ def initialize_system():
     add_health_practitioner_types()
     add_health_practitioners()
     add_patient(2000)
+    add_medication_history()
 
     print('Generation of data complete with status : done')
