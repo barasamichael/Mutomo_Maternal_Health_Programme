@@ -14,6 +14,30 @@ class ImageForm(FlaskForm):
     submit = SubmitField('submit')
 
 
+class DocumentUploadForm(FlaskForm):
+    type_id = SelectField('Document type', validators = [DataRequired(), Length(1, 255)])
+    file = FileField('Select File', 
+            validators = [FileRequired(), FileAllowed(['pdf'], 'Select PDF Files Only.')])
+    
+    submit = SubmitField('submit')
+
+
+class RegisterAffirmativeForm(FlaskForm):
+    description = TextField('description', validators = [DataRequired()])
+    submit = SubmitField('submit')
+
+
+class RegisterRecommendationForm(FlaskForm):
+    description = TextField('description', validators = [DataRequired()])
+    submit = SubmitField('submit')
+
+
+class RegisterSymptomForm(FlaskForm):
+    body_part_id = SelectField('select body part', validators = [DataRequired()])
+    description = TextField('description', validators = [DataRequired()])
+    submit = SubmitField('submit')
+
+
 class RegisterCheckUpDocumentTypeForm(FlaskForm):
     title = StringField('title', validators = [DataRequired(), Length(1, 16)])
     description = TextField('description', validators = [DataRequired()])

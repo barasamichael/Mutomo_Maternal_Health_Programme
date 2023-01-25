@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}
+    {{super()}}
+    Specialist Profile - {{specialist.first_name}} {{specialist.middle_name}} {{specialist.last_name}}
+{% endblock title%}
+
+{% block page_content %}
+<div class = "page-header">
+	<h3>
+                {{specialist.first_name}} {{specialist.middle_name}} {{specialist.last_name}}
+        </h3>
+</div>
+
+<div class = "list-group">
+        <span class = "list-group-item">
+        	<div class = "row">
+			<span class = "col-sm-4">
+				{% if specialist.associated_image %}
+
+				<img style = "width : 100%; height : auto;" class = "img img-circle" src = "{{url_for('static', filename = 'profiles/specialists/' + specialist.associated_image)}}">
+
+				{% else %}
+
+				<img class = "img img-rounded" style = "width : 50%; height : auto;" src = "{{url_for('static', filename = 'profiles/female-avatar.png')}}">
+				{% endif %}
+			</span>
+			<span class = "col-sm-8">
+				<blockquote class "blockquote" style = "padding-bottom : 5%;">
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Name</h4></div>
+						<div class = "col-sm-8"><h4 class = "text-muted">{{specialist.first_name}} {{specialist.middle_name}} {{specialist.last_name}}</h4>
+						</div>
+					</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Medical License ID</h4></div>
+						<div class = "col-sm-8"><h4 class = "text-muted">{{specialist.practitioner_id}}</h4></div>
+					</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Speciality</h4></div>
+                				<div class = "col-sm-8"><h4 class = "text-muted">{{specialist.type}}</h4></div>
+        				</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Health Center</h4></div>
+                				<div class = "col-sm-8"><h4 class = "text-muted">{{specialist.health_center}}</h4></div>
+        				</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>National ID number</h4></div>
+						<div class = "col-sm-8"><h4 class = "text-muted">{{specialist.national_id_no}}</h4></div>
+					</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Nationality</h4></div>
+						<div class = "col-sm-8"><h4 class = "text-muted">{{specialist.nationality}}</h4></div>
+					</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Email address</h4></div>
+                				<div class = "col-sm-8"><h4 class = "text-muted">{{specialist.email_address}}</h4></div>
+        				</div>
+					<div class = "row">
+						<div class = "col-sm-4"><h4>Location address</h4></div>
+                				<div class = "col-sm-8"><h4 class = "text-muted">{{specialist.email_address}}</h4></div>
+        				</div>
+					
+					<!-- Update specialist profile image -->
+					<p>
+					<a class = "btn btn-primary pull-left" href = "{{ url_for('registration.upload_health_specialist_image', health_specialist_id = specialist.health_specialist_id) }}">
+						Update Profile Image
+					</a>
+					<a class = "btn btn-primary pull-right" href = "">
+						Update Profile
+					</a>
+        				</p>
+				</blockquote>
+                	</span>
+        	</div>
+	</span>
+</div>
+{% endblock page_content %}

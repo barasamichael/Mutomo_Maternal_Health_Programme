@@ -13,7 +13,7 @@ from ..models import (Permission, patient, health_center, health_center_type,
         patient_phone_no, health_practitioner_phone_no, pregnancy, checkup, next_of_kin,
         hc_contact, allergy, allergy_symptom, social_history, medication_history, 
         miscarriage, surgery, body_part, family_history, social_history, patient_document_type,
-        patient_document, health_specialist_type)
+        patient_document, health_specialist_type, health_specialist)
 
 @profiles.route('/patient_document_type_profile/<int:type_id>', methods = ['GET', 'POST'])
 def patient_document_type_profile(type_id):
@@ -66,7 +66,7 @@ def family_history_profile(family_history_id):
     form = FamilyHistoryForm()
     if flask.request.method == 'POST' and form.validate_on_submit():
         family = family_history.query.filter_by(
-                social_history_id = social_history_id).first_or_404()
+                family_history_id = family_history_id).first_or_404()
         
         family.title = form.title.data
         family.description = form.description.data
@@ -668,6 +668,14 @@ def pregnancy_profile(pregnancy_id):
     return flask.render_template('profiles/pregnancy_profile.html', profile = profile, checkups = checkups)
 
 
+@profiles.route('/health_specialist_profile/<int:health_specialist_id>')
+def health_specialist_profile(health_specialist_id):
+    specialist = health_specialist.query.filter_by(
+            health_specialist_id = health_specialist_id).first_or_404()
+    return flask.render_template('profiles/health_specialist_profile.html', 
+            specialist = specialist)
+
+
 @profiles.route('/list_of_health_specialists')
 def list_of_health_specialists():
     page = flask.request.args.get('page', 1, type = int)
@@ -682,9 +690,9 @@ def list_of_health_specialists():
                 health_specialist.last_name,
                 health_specialist.gender,
                 health_specialist.email_address,
+                health_specialist.health_center,
                 health_specialist_type.health_specialist_type_id,
                 health_specialist_type.title,
-                health_specialist_type.health_center
             ).order_by(health_specialist.practitioner_id.desc()).paginate(page,
                     flask.current_app.config['FLASKY_POSTS_PER_PAGE'], error_out = False)
     specialists = pagination.items

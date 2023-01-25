@@ -478,8 +478,7 @@ def register_health_specialist():
 
         db.session.commit()
         flask.flash(f'{form.first_name.data} {form.middle_name.data} {form.last_name.data} registered successfully')
-        return flask.redirect(flask.url_for('registration.register_health_specialist', 
-            department_id = department_id))
+        return flask.redirect(flask.url_for('registration.register_health_specialist')) 
 
     return flask.render_template('registration/register_health_specialist.html', form = form)
 

@@ -5,10 +5,66 @@ from sqlalchemy.exc import IntegrityError
 
 from .. import db
 from ..models import (health_center, health_center_type, health_center_department,
-        department_schedule, department_service, patient, patient_document, 
+        department_schedule, department_service, patient, patient_document, checkup, 
         health_practitioner, health_practitioner_type, patient_document_type, social_history,
-        miscarriage, medication_history, body_part, surgery, pregnancy) 
+        miscarriage, medication_history, body_part, surgery, pregnancy, family_history,
+        allergy, allergy_symptom)
 
+
+def add_allergy():
+    from .list_of_allergies import allergies
+
+    patients = patient.query.all()
+
+    for Patient in patients:
+        for i in range(0, 2):
+            index = randint(0, len(allergies) - 1)
+            Allergy = allergy(
+                    description = allergies[index][0], 
+                    cause = allergies[index][1],
+                    remedy = allergies[index][2], 
+                    patient_id = Patient.patient_id
+                    )
+            db.session.add(Allergy)
+            db.session.commit()
+            print("Allergy record added successfully...")
+
+            Allergy = allergy.query.order_by(allergy.allergy_id.desc()).first()
+            # generate symptoms
+            for i in range(randint(len(allergies[index][3]) // 3, len(allergies[index][3]))):
+                symptom = allergy_symptom(
+                        description = allergies[index][3][randint(0, len(allergies[index][3]) - 1)],
+                        allergy_id = Allergy.allergy_id
+                        )
+                db.session.add(symptom)
+
+            db.session.commit()
+            print("Allergy symptoms registered successfully...")
+    print("Generation of allergy records complete with exit status done....")
+
+
+def add_family_history():
+    from .list_of_family_histories import members, histories
+
+    patients = patient.query.all()
+
+    for Patient in patients:
+        for i in range(randint(0, 3)):
+            # let us populate the description for a disease
+            description = ""
+            for i in range(randint((len(members) - 1) // 3, len(members) - 1)):
+               value = members[randint(0, len(members) - 1)]
+               if value not in description:
+                   description += ", " + value
+
+            # save the data in the database
+            Family_History = family_history(
+                    title = histories[randint(0, len(histories) - 1)],
+                    description = description,
+                    patient_id = Patient.patient_id
+                    )
+            db.session.add(Family_History)
+            db.session.commit()
 
 def add_social_history():
     from .list_of_social_histories import socials
@@ -16,16 +72,17 @@ def add_social_history():
     patients = patient.query.all()
 
     for Patient in patients:
-        for i in range(randint(1, 5)):
-            data = socials[randint(0, len(socials) - 1)]
+        for i in range(randint(0, 3)):
+            # save the data in the database
+            social_index = randint(0, len(socials) - 1)
             Social_History = social_history(
-                    title = data[0],
-                    description = data[1],
+                    title = socials[social_index][0],
+                    description = socials[social_index][1][randint(0, len(socials[social_index][1]) - 1)],
                     patient_id = Patient.patient_id
                     )
             db.session.add(Social_History)
             db.session.commit()
-            print('Registration of social history record {patient.first_name} successfull')
+            print(f'Registration of social history record {Patient.first_name} successfull')
     print("Registration of social histories complete with status done")
 
 
@@ -146,6 +203,33 @@ def register_miscarriage(count = 20):
         print(f'Miscarriage record #{i} done successfully')
 
     print("Registration of miscarriages complete with status done...")
+
+def add_checkup():
+    pregnancies = pregnancy.query.all()
+    print(pregnancies)
+
+    for Pregnancy in pregnancies:
+        practitioners = health_practitioner.query.all()
+        practitioner = practitioners[randint(1, len(practitioners) - 1)]
+
+        date = Pregnancy.conception_date
+        for i in range(randint(1, 8)):
+            session = checkup(
+                    pregnancy_id = Pregnancy.pregnancy_id,
+                    health_practitioner_id = practitioner.health_practitioner_id,
+                    )
+
+            #generate a realistic date
+            date = date + datetime.timedelta(hours = 24 * randint(20, 30))
+            if date > Pregnancy.due_date:
+                break
+            session.date = date
+            
+            db.session.add(session)
+            db.session.commit()
+            print(f"Session {i} for pregnancy ID {Pregnancy.pregnancy_id} added successfully...")
+    
+    print("Registration of checkup sessions complete with status done...")
 
 
 def register_pregnancy(count = 100):
@@ -437,6 +521,7 @@ def add_health_center_types():
     
     print("Registration of health center types complete with status : done")
 
+
 def initialize_system():
     print('Initiliazing system...')
     print('Flushing database...')
@@ -454,5 +539,12 @@ def initialize_system():
     add_health_practitioners()
     add_patient(2000)
     add_medication_history()
-
+    register_pregnancy(1000)
+    add_checkup()
+    register_miscarriage(100)
+    add_surgery()
+    add_checkup()
+    add_family_history()
+    add_social_history()
+    add_allergy()
     print('Generation of data complete with status : done')

@@ -5,9 +5,11 @@ from random import randint
 from . import checkups
 from .. import db
 
-from .forms import (RegisterCheckUpDocumentTypeForm)
+from .forms import (RegisterCheckUpDocumentTypeForm, DocumentUploadForm, RegisterSymptomForm,
+        RegisterRecommendationForm, RegisterAffirmativeForm)
 
-from ..models import (pregnancy, checkup, patient, health_practitioner, checkup_document_type, checkup_document)
+from ..models import (pregnancy, checkup, patient, health_practitioner, checkup_document_type, checkup_document,
+        checkup_symptom, body_part, recommendation, affirmative)
 
 
 def validate_image(stream):
@@ -21,7 +23,7 @@ def validate_image(stream):
     return '.' + (format if format == 'jpeg' else 'jpg')
 
 
-@profiles.route('/documents/<int:checkup_id>')
+@checkups.route('/documents/<int:checkup_id>')
 def checkup_documents(checkup_id):
     response = flask.make_response(
         flask.redirect(flask.url_for('checkups.checkup_profile', checkup_id = checkup_id)))
@@ -29,7 +31,7 @@ def checkup_documents(checkup_id):
     return response
 
 
-@profiles.route('/diagnosis/<int:checkup_id>')
+@checkups.route('/diagnosis/<int:checkup_id>')
 def checkup_diagnosis(checkup_id):
     response = flask.make_response(
         flask.redirect(flask.url_for('checkups.checkup_profile', checkup_id = checkup_id)))
@@ -37,7 +39,7 @@ def checkup_diagnosis(checkup_id):
     return response
 
 
-@profiles.route('/recommendations/<int:checkup_id>')
+@checkups.route('/recommendations/<int:checkup_id>')
 def checkup_recommendations(checkup_id):
     response = flask.make_response(
         flask.redirect(flask.url_for('checkups.checkup_profile', checkup_id = checkup_id)))
@@ -45,7 +47,7 @@ def checkup_recommendations(checkup_id):
     return response
 
 
-@profiles.route('/affirmatives/<int:checkup_id>')
+@checkups.route('/affirmatives/<int:checkup_id>')
 def checkup_affirmatives(checkup_id):
     response = flask.make_response(
         flask.redirect(flask.url_for('checkups.checkup_profile', checkup_id = checkup_id)))
@@ -107,11 +109,95 @@ def checkup_profile(checkup_id):
             db.session.add(Document)
             db.session.commit()
 
-            flask.flash('Checkup document registered successfully.')
+            flask.flash('Checkup document registered successfully.')     
+            return flask.redirect(flask.url_for('checkups.checkup_profile', 
+                checkup_id = checkup_id))
+        
+        return flask.render_template('checkups/checkup_profile.html', profile = profile,
+            tab_variable = tab_variable, document_form = document_form)
+    
+    elif tab_variable == 1:
+        symptom_form = RegisterSymptomForm()
+
+        body_parts = [((item.body_part_id), (item.title)) for item in body_part.query.all()]
+        symptom_form.body_part_id.choices = body_parts
+
+        if symptom_form.validate_on_submit():
+            Symptom = checkup_symptom(
+                    body_part_id = symptom_form.body_part_id.data,
+                    description = symptom_form.description.data,
+                    checkup_id = profile.checkup_id
+                    )
+            db.session.add(Symptom)
+            db.session.commit()
+
+            flask.flash('Symptom added successfully.')
             return flask.redirect(flask.url_for('checkups.checkup_profile', 
                 checkup_id = checkup_id))
 
-    return flask.render_template('checkups/checkup_profile.html', profile = profile)
+        symptoms = checkup_symptom.query.filter_by(checkup_id = checkup_id)\
+                .join(body_part, body_part.body_part_id == checkup_symptom.body_part_id)\
+                .add_columns(
+                        checkup_symptom.checkup_symptom_id,
+                        checkup_symptom.description,
+                        body_part.body_part_id,
+                        body_part.title,
+                        ).order_by(checkup_symptom.description.desc()).all()
+
+        return flask.render_template('checkups/checkup_profile.html', profile = profile,
+            tab_variable = tab_variable, symptom_form = symptom_form, symptoms = symptoms)
+    
+    elif tab_variable == 2:
+        recommendations = recommendation.query.filter_by(checkup_id = checkup_id).all()
+
+        recommendation_form = RegisterRecommendationForm()
+        if recommendation_form.validate_on_submit():
+            Recommendation = recommendation(
+                    description = recommendation_form.description.data,
+                    checkup_id = checkup_id
+                    )
+            
+            db.session.add(Recommendation)
+            db.session.commit()
+
+            flask.flash("Recommendation added successfully.")
+
+            return flask.redirect(flask.url_for('checkups.checkup_profile', 
+                checkup_id = checkup_id))
+
+        return flask.render_template('checkups/checkup_profile.html', profile = profile,
+            tab_variable = tab_variable, recommendation_form = recommendation_form, 
+            recommendations = recommendations)
+
+    elif tab_variable == 3:
+        affirmatives = affirmative.query.filter_by(checkup_id = checkup_id).all()
+
+        affirmative_form = RegisterAffirmativeForm()
+        if affirmative_form.validate_on_submit():
+            Affirmative = affirmative(
+                    description = affirmative_form.description.data,
+                    checkup_id = checkup_id
+                    )
+            
+            db.session.add(Affirmative)
+            db.session.commit()
+
+            flask.flash("Affirmative added successfully.")
+
+            return flask.redirect(flask.url_for('checkups.checkup_profile', 
+                checkup_id = checkup_id))
+
+        return flask.render_template('checkups/checkup_profile.html', profile = profile,
+            tab_variable = tab_variable, affirmative_form = affirmative_form, 
+            affirmatives = affirmatives)
+
+
+    return flask.render_template('checkups/checkup_profile.html', profile = profile,
+            tab_variable = tab_variable)
+
+
+    return flask.render_template('checkups/checkup_profile.html', profile = profile,
+            tab_variable = tab_variable)
 
 
 @checkups.route('/register_checkup/<int:pregnancy_id>')
