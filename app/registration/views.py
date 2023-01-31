@@ -9,12 +9,13 @@ from .forms import (RegisterPatientForm, RegisterHealthCenterTypeForm, RegisterH
         RegisterHealthPractitionerTypeForm, RegisterPatientPhoneNoForm, RegisterPregnancyForm,
         RegisterHealthCenterContactForm, RegisterHealthPractitionerPhoneNoForm,
         RegisterKinForm, RegisterPatientDocumentTypeForm, RegisterHealthSpecialistTypeForm,
-        RegisterHealthSpecialistForm)
+        RegisterHealthSpecialistForm, RegisterServiceForm)
 
 from ..models import (Permission, patient, health_center_type, health_center, patient_phone_no, 
         health_practitioner, health_center_department, pregnancy, health_practitioner_type, hc_contact,
         health_practitioner_phone_no, body_part, next_of_kin, patient_document_type,
-        health_specialist_type, health_specialist)
+        health_specialist_type, health_specialist, service, department_schedule)
+
 
 def validate_image(stream):
     header = stream.read(512)
@@ -25,6 +26,22 @@ def validate_image(stream):
         return None
 
     return '.' + (format if format == 'jpeg' else 'jpg')
+
+
+@registration.route('/register_service', methods = ['GET', 'POST'])
+def register_service():
+    form = RegisterServiceForm()
+    if form.validate_on_submit():
+        Service = service(
+                title = form.title.data,
+                description = form.description.data
+                )
+        db.session.add(Service)
+        db.session.commit()
+        flask.flash(f"{form.title.data} added successfully")
+        return flask.redirect(flask.url_for('registration.register_service'))
+
+    return flask.render_template('registration/register_service.html', form = form)
 
 
 @registration.route('/register_body_part', methods = ['GET', 'POST'])

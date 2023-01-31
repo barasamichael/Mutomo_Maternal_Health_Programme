@@ -68,52 +68,19 @@
 <div class = "container">
 	<ul class = "nav nav-tabs">
 		<li class = "active">
-			<a href = "{{url_for('profiles.center_profile', health_center_id = center.health_center_id)}}">
-				Profile
+			<a href = "{{url_for('profiles.departments', health_center_id = center.health_center_id)}}">
+				Departments
 			</a>
 		</li>
 		<li>
-			<a href = "{{url_for('profiles.departments', health_center_id = center.health_center_id)}}">
-				Departments
+			<a href = "{{url_for('profiles.center_profile', health_center_id = center.health_center_id)}}">
+				Profile
 			</a>
 		</li>
 	</ul>
 </div>
 
 {% if tab_variable == 0 %}
-<div class = "list-group", style = 'margin:1%;'>
-	<h4 class = "text-muted" style = "margin-top:5%;">Center Contacts</h4>
-	<span class = "list-group-item">
-		<p>
-		<a href = '{{url_for('registration.register_health_center_contact', health_center_id = center.health_center_id)}}' class = 'btn btn-success'>
-			Add Contact
-		</a>
-		</p>
-		<table class = 'table table-bordered table-dark table-hover table-responsive table-striped'>
-			<thead class = 'thead thead-dark'>
-				<tr>
-					<th>Contact</th>
-					<th>Emergency</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for phone_number in phone_numbers %}
-				<tr>
-					<td>{{ phone_number.description }}</td>
-					<td>
-						{% if phone_number.emergency %}
-						<span style = "color : red;"> Emergency </span>
-						{% else %}
-						<span style = "color : grey;"> Normal </span>
-						{% endif %}
-					</td>
-				</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	</span>
-</div>
-{% elif tab_variable == 1 %}
 <h3>
 	Departments
 </h3>
@@ -148,6 +115,39 @@
 						</a>
 					</td>
 					<td>{{ department.description }}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</span>
+</div>
+{% elif tab_variable == 1 %}
+<div class = "list-group", style = 'margin:1%;'>
+	<h4 class = "text-muted" style = "margin-top:5%;">Center Contacts</h4>
+	<span class = "list-group-item">
+		<p>
+		<a href = '{{url_for('registration.register_health_center_contact', health_center_id = center.health_center_id)}}' class = 'btn btn-success'>
+			Add Contact
+		</a>
+		</p>
+		<table class = 'table table-bordered table-dark table-hover table-responsive table-striped'>
+			<thead class = 'thead thead-dark'>
+				<tr>
+					<th>Contact</th>
+					<th>Emergency</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for phone_number in phone_numbers %}
+				<tr>
+					<td>{{ phone_number.description }}</td>
+					<td>
+						{% if phone_number.emergency %}
+						<span style = "color : red;"> Emergency </span>
+						{% else %}
+						<span style = "color : grey;"> Normal </span>
+						{% endif %}
+					</td>
 				</tr>
 				{% endfor %}
 			</tbody>

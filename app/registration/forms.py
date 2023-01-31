@@ -8,7 +8,7 @@ from wtforms import ValidationError
 from ..models import (patient, patient_phone_no, health_center, health_center_department, 
         health_center_type, health_practitioner, health_practitioner_type, hc_contact,
         health_practitioner_phone_no, body_part, patient_document_type,
-        health_specialist_type)
+        health_specialist_type, service)
 
 class ImageForm(FlaskForm):
     file = FileField('select file', validators = [FileRequired(),
@@ -16,6 +16,17 @@ class ImageForm(FlaskForm):
 
     submit = SubmitField('submit')
 
+
+class RegisterServiceForm(FlaskForm):
+    title = StringField('title', validators = [DataRequired(), Length(1, 120)])
+    description = TextField('description', 
+            validators = [DataRequired(), Length(1, 2000)])
+
+    submit = SubmitField('submit')
+
+    def validate_title(self,field):
+        if service.query.filter_by(title = field.data).first():
+            raise ValidationError(f'{field.data} already registered')
 
 class RegisterPatientDocumentTypeForm(FlaskForm):
     title = StringField('title', validators = [DataRequired(), Length(1, 120)])

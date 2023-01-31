@@ -6,14 +6,63 @@ from . import profiles
 from .. import db
 from .forms import (RegisterAllergyForm, RegisterSymptomForm, RegisterSurgeryForm, UpdateBodyPartForm,
         MedicationHistoryForm, FamilyHistoryForm, SocialHistoryForm, RegisterMiscarriageForm,
-        UpdatePatientDocumentTypeForm, DocumentUploadForm)
+        UpdatePatientDocumentTypeForm, DocumentUploadForm, AssignServiceForm, RegisterDepartmentScheduleForm)
 
 from ..models import (Permission, patient, health_center, health_center_type,
         health_center_department, health_practitioner, health_practitioner_type, 
         patient_phone_no, health_practitioner_phone_no, pregnancy, checkup, next_of_kin,
         hc_contact, allergy, allergy_symptom, social_history, medication_history, 
         miscarriage, surgery, body_part, family_history, social_history, patient_document_type,
-        patient_document, health_specialist_type, health_specialist)
+        patient_document, health_specialist_type, health_specialist, service_assignment,
+        department_schedule, day, service)
+
+
+@profiles.route('/view_services')
+def view_services():
+    page = flask.request.args.get('page', 1, type = int)
+    pagination = service.query.order_by(service.title.desc())\
+            .paginate(page = page, per_page  = flask.current_app.config['FLASKY_POSTS_PER_PAGE'],
+                    error_out = False)
+    services = pagination.items
+    return flask.render_template('profiles/view_services.html', pagination = pagination, services = services)
+
+@profiles.route('/schedule_profile/<int:schedule_id>', methods = ['GET', 'POST'])
+def schedule_profile(schedule_id):
+    schedule = department_schedule.query.filter_by(department_schedule_id = schedule_id)\
+            .join(day, day.day_id == department_schedule.day_id)\
+            .join(health_center_department, health_center_department.hc_department_id 
+                    == department_schedule.hc_department_id)\
+            .add_columns(
+                    department_schedule.department_schedule_id,
+                    department_schedule.start_time,
+                    department_schedule.end_time,
+                    day.day_id,
+                    day.description.label('day'),
+                    health_center_department.hc_department_id,
+                    health_center_department.title.label('department_title')
+                    ).first_or_404()
+    
+    services = service_assignment.query.filter_by(department_schedule_id = schedule_id)\
+            .join(service, service.service_id == service_assignment.service_id)\
+            .add_columns(service.title).all()
+
+    form = AssignServiceForm()
+    form.service_id.choices = [((item.service_id), (item.title)) for item in service.query.all()]
+
+    if flask.request.method == 'POST' and form.validate_on_submit():
+        Assignment = service_assignment(
+                service_id = form.service_id.data,
+                department_schedule_id = schedule_id
+                ) 
+        db.session.add(Assignment)
+        db.session.commit()
+        
+        flask.flash("Addition of service to our schedule successful")
+        return flask.redirect(flask.url_for('profiles.schedule_profile', schedule_id = schedule_id))
+
+    return flask.render_template('profiles/schedule_profile.html', services = services, 
+            schedule = schedule, form = form)
+
 
 @profiles.route('/patient_document_type_profile/<int:type_id>', methods = ['GET', 'POST'])
 def patient_document_type_profile(type_id):
@@ -215,7 +264,7 @@ def body_part_profile(body_part_id):
 def view_body_part_records():
     page = flask.request.args.get('page', 1, type = int)
     pagination = body_part.query.order_by(body_part.title.desc())\
-            .paginate(page, flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
+            .paginate(page = page, per_page  = flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
                     error_out = False)
     parts = pagination.items
 
@@ -228,7 +277,7 @@ def view_health_center_types():
     page = flask.request.args.get('page', 1, type = int)
     pagination = health_center_type.query.order_by(
             health_center_type.title.desc()\
-                    ).paginate(page, flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
+                    ).paginate(page = page, per_page = flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
                             error_out = False)
     center_types = pagination.items
 
@@ -236,11 +285,23 @@ def view_health_center_types():
             center_types = center_types, pagination = pagination)
 
 
+@profiles.route('/view_body_parts')
+def view_body_parts():
+    page = flask.request.args.get('page', 1, type = int)
+    pagination = body_part.query.order_by(body_part.title.asc())\
+            .paginate(page = page, per_page = flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
+                    error_out = False)
+    body_parts = pagination.items
+
+    return flask.render_template("profiles/view_body_parts.html", 
+            body_parts = body_parts, pagination = pagination)
+
+
 @profiles.route('/view_health_specialist_types')
 def view_health_specialist_types():
     page = flask.request.args.get('page', 1, type = int)
     pagination = health_specialist_type.query.order_by(health_specialist_type.title.desc())\
-            .paginate(page, flask.current_app.config['FLASKY_POSTS_PER_PAGE'], error_out = False)
+            .paginate(page = page, per_page = flask.current_app.config['FLASKY_POSTS_PER_PAGE'], error_out = False)
     specialities = pagination.items
 
     return flask.render_template('profiles/view_health_specialist_types.html', 
@@ -252,7 +313,8 @@ def view_health_specialist_types():
 def view_health_practitioner_types():
     page = flask.request.args.get('page', 1, type = int)
     pagination = health_practitioner_type.query.order_by(health_practitioner_type.title.desc())\
-            .paginate(page, flask.current_app.config['FLASKY_POSTS_PER_PAGE'], error_out = False)
+            .paginate(page = page, per_page = flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
+                    error_out = False)
     specialities = pagination.items
 
     return flask.render_template('profiles/view_health_practitioner_types.html', 
@@ -273,7 +335,7 @@ def view_health_centers():
                     health_center_type.hc_type_id,
                     health_center_type.title.label('type')
                 ).order_by(health_center.hc_type_id.desc())\
-                        .paginate(page, flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
+                        .paginate(page = page, per_page = flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
                                 error_out = False)
     centers = pagination.items
 
@@ -284,8 +346,8 @@ def view_health_centers():
 @profiles.route('/list_of_patients')
 def list_of_patients():
     page = flask.request.args.get('page', 1, type = int)
-    pagination = patient.query.order_by(patient.patient_id.desc()).paginate(page, 
-            flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
+    pagination = patient.query.order_by(patient.patient_id.desc()).paginate(page = page, 
+            per_page = flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
             error_out = False)
     patients = pagination.items
 
@@ -662,7 +724,7 @@ def pregnancy_profile(pregnancy_id):
                                     health_center_department.hc_department_id,
                                     health_center_department.title.label('department')
                             ).order_by(checkup.date_created.desc())\
-                            .paginate(page, flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
+                            .paginate(page = page, per_page = flask.current_app.config['FLASKY_POSTS_PER_PAGE'], 
                                     error_out = False)
     checkups = pagination.items
     return flask.render_template('profiles/pregnancy_profile.html', profile = profile, checkups = checkups)
@@ -693,8 +755,8 @@ def list_of_health_specialists():
                 health_specialist.health_center,
                 health_specialist_type.health_specialist_type_id,
                 health_specialist_type.title,
-            ).order_by(health_specialist.practitioner_id.desc()).paginate(page,
-                    flask.current_app.config['FLASKY_POSTS_PER_PAGE'], error_out = False)
+            ).order_by(health_specialist.practitioner_id.desc()).paginate(page = page,
+                    per_page = flask.current_app.config['FLASKY_POSTS_PER_PAGE'], error_out = False)
     specialists = pagination.items
 
     return flask.render_template('profiles/list_of_health_specialists.html', 
@@ -726,8 +788,8 @@ def list_of_health_practitioners():
                 health_center.title.label('health_center'),
                 health_center_department.hc_department_id,
                 health_center_department.title.label('department')
-            ).order_by(health_practitioner.health_practitioner_id).paginate(page,
-                    flask.current_app.config['FLASKY_POSTS_PER_PAGE'], error_out = False)
+            ).order_by(health_practitioner.health_practitioner_id).paginate(page = page,
+                    per_page = flask.current_app.config['FLASKY_POSTS_PER_PAGE'], error_out = False)
     practitioners = pagination.items
 
     return flask.render_template('profiles/list_of_health_practitioners.html', 
@@ -776,8 +838,8 @@ def health_practitioner_profile(health_practitioner_id):
             practitioner = Practitioner, tab_variable = tab_variable)
 
 
-@profiles.route('/center_profile/<int:health_center_id>')
-def center_profile(health_center_id):
+@profiles.route('/departments/<int:health_center_id>')
+def departments(health_center_id):
     response = flask.make_response(
         flask.redirect(
             flask.url_for('profiles.health_center_profile', health_center_id = health_center_id)))
@@ -785,8 +847,8 @@ def center_profile(health_center_id):
     return response
 
 
-@profiles.route('/departments/<int:health_center_id>')
-def departments(health_center_id):
+@profiles.route('/center_profile/<int:health_center_id>')
+def center_profile(health_center_id):
     response = flask.make_response(
         flask.redirect(
             flask.url_for('profiles.health_center_profile', health_center_id = health_center_id)))
@@ -818,6 +880,16 @@ def health_center_profile(health_center_id):
 
     #personal details
     if tab_variable == 0:
+        page = flask.request.args.get('page', 1, type = int)
+        pagination = health_center_department.query.filter_by(
+            health_center_id = health_center_id).paginate(page = page, 
+                per_page = flask.current_app.config['FLASKY_POSTS_PER_PAGE'], error_out = False)
+        departments = pagination.items
+
+        return flask.render_template('profiles/health_center_profile.html', 
+            departments = departments, center = Health_Center, tab_variable = tab_variable)
+    
+    elif tab_variable == 1:
         phone_numbers = hc_contact.query.filter_by(health_center_id = health_center_id)\
                 .order_by(hc_contact.hc_contact_id).all()
 
@@ -825,22 +897,12 @@ def health_center_profile(health_center_id):
             phone_numbers = phone_numbers, center = Health_Center, 
             tab_variable = tab_variable)
     
-    elif tab_variable == 1:
-        page = flask.request.args.get('page', 1, type = int)
-        pagination = health_center_department.query.filter_by(
-            health_center_id = health_center_id).paginate(page, 
-                flask.current_app.config['FLASKY_POSTS_PER_PAGE'], error_out = False)
-        departments = pagination.items
-
-        return flask.render_template('profiles/health_center_profile.html', 
-            departments = departments, center = Health_Center, tab_variable = tab_variable)
-    
     return flask.render_template('profiles/health_center_profile.html', 
             center = Health_Center, tab_variable = tab_variable)
     
 
-@profiles.route('/department_schedule/<int:hc_department_id>')
-def department_schedule(hc_department_id):
+@profiles.route('/department_schedules/<int:hc_department_id>')
+def department_schedules(hc_department_id):
     response = flask.make_response(
         flask.redirect(
             flask.url_for('profiles.center_department', hc_department_id = hc_department_id)))
@@ -875,15 +937,51 @@ def center_department(hc_department_id):
                 ).first_or_404()
 
     tab_variable = 0
-    if flask.request.cookies.get('tab_var') is not None:
+    if flask.request.cookies.get('tab_var'):
         tab_variable = int(flask.request.cookies.get('tab_var'))
 
-    #personal details
+    # schedule details
     if tab_variable == 0:
+        schedules = department_schedule.query.filter_by(hc_department_id = hc_department_id)\
+                .join(day, day.day_id == department_schedule.day_id)\
+                .add_columns(
+                        department_schedule.department_schedule_id,
+                        department_schedule.start_time,
+                        department_schedule.end_time,
+                        day.description
+                    )
+
+        services_metadata = {}
+        for schedule in schedules:
+            services = service_assignment.query\
+                    .filter_by(department_schedule_id = schedule.department_schedule_id)\
+                    .join(service, service.service_id == service_assignment.service_id)\
+                    .add_columns(service.title).all()
+
+            services_metadata.update({schedule.department_schedule_id : services})
+
+        form = RegisterDepartmentScheduleForm()
+        form.day_id.choices = [((item.day_id), (item.description)) for item in day.query.all()]
+
+        if flask.request.method == 'POST' and form.validate_on_submit():
+            Schedule = department_schedule(
+                start_time = datetime.combine(datetime.today(), form.start_time.data),
+                end_time = datetime.combine(datetime.today(), form.end_time.data),
+                day_id = form.day_id.data,
+                hc_department_id = hc_department_id
+            )
+            db.session.add(Schedule)
+            db.session.commit()
+        
+            flask.flash("Department schedule added successfully.")
+            return flask.redirect(flask.url_for('profiles.center_department', 
+                hc_department_id = hc_department_id))
+
         return flask.render_template('profiles/center_department.html', 
-            department = Department, tab_variable = tab_variable)
+            department = Department, services_metadata = services_metadata, schedules = schedules, 
+            form = form, tab_variable = tab_variable)
     
-    #department health practitioners
+    # department health practitioners
     if tab_variable == 1:
         page = flask.request.args.get('page', 1, type = int)
         pagination = health_practitioner.query\
@@ -900,8 +998,8 @@ def center_department(hc_department_id):
                     health_practitioner.practitioner_id,
                     health_practitioner_type.hp_type_id,
                     health_practitioner_type.title,
-                    ).order_by(health_practitioner.health_practitioner_id).paginate(page, 
-                            flask.current_app.config['FLASKY_POSTS_PER_PAGE'], error_out = False)
+                    ).order_by(health_practitioner.health_practitioner_id).paginate(page = page, 
+                            per_page = flask.current_app.config['FLASKY_POSTS_PER_PAGE'], error_out = False)
         practitioners = pagination.items
 
         return flask.render_template('profiles/center_department.html', 

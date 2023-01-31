@@ -47,7 +47,7 @@
 <div class = "container">
 	<ul class = "nav nav-tabs">
 		<li class = "active">
-			<a href = "{{url_for('profiles.department_schedule', hc_department_id = department.hc_department_id)}}">
+			<a href = "{{url_for('profiles.department_schedules', hc_department_id = department.hc_department_id)}}">
 				Schedule
 			</a>
 		</li>
@@ -62,12 +62,54 @@
 {% if tab_variable == 0 %}
 
 <div class = 'list-group' style = 'margin:1%;'>
-	<a href = '' class = 'list-group-item active'>
-		<h4 class = 'list-group-item-header'>
-			Add Schedule
-		</h4>
-	</a>
+	<div class = "list-group" style = 'margin:1%;'>
+		<span class = "list-group-item">
+		<h4>Add schedule</h4>
+			{{ wtf.quick_form(form) }}
+		</span>
+	</div>
 </div>
+<div class = 'list-group' style = 'margin:1%;'>
+	<div class = "list-group" style = 'margin:1%' >
+	<span class = 'list-group-item'>
+		<table class = 'table table-dark table-hover table-bordered table-responsive table-striped'>
+			<thead>
+				<tr>
+					<th>Schedule ID</th>
+					<th>Day</th>
+					<th>From</th>
+					<th>To</th>
+					<th>Services</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for schedule in schedules %}
+				<tr>
+					<td>
+						<a href = "{{ url_for('profiles.schedule_profile', schedule_id = schedule.department_schedule_id) }}">
+							{{ schedule.department_schedule_id }}
+						</a>
+					</td>
+					<td>{{ schedule.description }}</td>
+					<td>{{ moment(schedule.start_time).format('HH:mm:ss A') }}</td>
+					<td>{{ moment(schedule.end_time).format('HH:mm:ss A') }}</td>
+					<td>
+						{% if services_metadata.get('schedule.department_schedule_id') %}
+						<ul>
+						{% for item in services_metadata.get('schedule.department_schedule_id') %}
+						<li>{{ item }}</li>
+						{% endfor %}
+						</ul>
+						{% endif %}
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</span>
+	</div>
+</div>
+
 {% elif tab_variable == 1 %}
 
 <div class = 'list-group' style = 'margin:1%;'>

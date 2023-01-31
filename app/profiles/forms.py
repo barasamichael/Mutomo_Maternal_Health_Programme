@@ -3,9 +3,16 @@ from flask_wtf.file import FileRequired, FileAllowed
 from wtforms import (StringField, SelectField, BooleanField, SubmitField, IntegerField, 
         FileField, PasswordField, FloatField, TextField)
 from wtforms.validators import DataRequired, Length, Email, EqualTo
-from wtforms.fields.html5 import DateField
+from wtforms.fields.html5 import DateField, TimeField
 from wtforms import ValidationError
 from ..models import (allergy, allergy_symptom, patient, patient_document)
+
+class RegisterDepartmentScheduleForm(FlaskForm):
+    day_id = SelectField('Day of the week', validators = [DataRequired()]) 
+    start_time = TimeField('Start time', validators = [DataRequired()])
+    end_time = TimeField('End time', validators = [DataRequired()]) 
+    
+    submit = SubmitField('submit')
 
 
 class DocumentUploadForm(FlaskForm):
@@ -80,6 +87,9 @@ class RegisterAllergyForm(FlaskForm):
         if allergy.query.filter_by(description = field.data).first():
             raise ValidationError(f'{field.data} is already recorded')
 
+class AssignServiceForm(FlaskForm):
+    service_id = SelectField('select service', validators = [DataRequired()])
+    submit = SubmitField('submit')
 
 class RegisterSurgeryForm(FlaskForm):
     description = StringField('description', validators = [DataRequired(), Length(1, 255)])

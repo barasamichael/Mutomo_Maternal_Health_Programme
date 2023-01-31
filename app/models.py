@@ -1,7 +1,7 @@
 import flask
 from flask_login import UserMixin, AnonymousUserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from itsdangerous import TimedJSONWebSignatureSerializer as serializer
+from itsdangerous.url_safe import URLSafeTimedSerializer as serializer
 from datetime import datetime
 
 from . import db, login_manager
@@ -935,7 +935,6 @@ class health_center_department(db.Model):
     
     schedules = db.relationship('department_schedule', backref = 'department', 
             lazy = 'dynamic')
-    services = db.relationship('department_service', backref = 'department', lazy = 'dynamic') 
     practioners = db.relationship('health_practitioner', backref = 'department', 
             lazy = 'dynamic')
     
@@ -945,6 +944,7 @@ class health_center_department(db.Model):
 
     def repr(self):
         return f'<{self.hc_contact_id}, {self.description}>'
+
 
 class day(db.Model):
     """
@@ -968,12 +968,9 @@ class service_assignment(db.Model):
     __tablename__ = 'service_assignment'
     service_assignment_id = db.Column(db.Integer, primary_key = True)
     
-    start_time = db.Column(db.DateTime, default = datetime.utcnow, nullable = False)
-    end_time = db.Column(db.DateTime, default = datetime.utcnow, nullable = False)
-    
     #relationships
-    department_service_id = db.Column(db.Integer, 
-            db.ForeignKey('department_service.department_service_id'), nullable = False)
+    service_id = db.Column(db.Integer, 
+            db.ForeignKey('service.service_id'), nullable = False)
     department_schedule_id = db.Column(db.Integer, 
             db.ForeignKey('department_schedule.department_schedule_id'), nullable = False)
     
@@ -985,20 +982,17 @@ class service_assignment(db.Model):
         return f'<{self.service_assignment_id}>'
 
 
-class department_service(db.Model):
+class service(db.Model):
     """
-    Contains service details for a particular department
+    Contains service details
     """
-    __tablename__ = 'department_service'
-    department_service_id = db.Column(db.Integer, primary_key = True)
+    __tablename__ = 'service'
+    service_id = db.Column(db.Integer, primary_key = True)
     
     title = db.Column(db.String(255), nullable = False)
     description = db.Column(db.Text, nullable = False)
 
     #relationships
-    hc_department_id = db.Column(db.Integer, db.ForeignKey('health_center_department.hc_department_id'), 
-            nullable = False)
-
     assignments = db.relationship('service_assignment', backref = 'checkup', 
             lazy = 'dynamic')
     
@@ -1007,7 +1001,7 @@ class department_service(db.Model):
             onupdate = datetime.utcnow)
 
     def repr(self):
-        return f'<{self.department_service_id}>'
+        return f'<{self.service_id}>'
 
 
 class department_schedule(db.Model):
@@ -1016,6 +1010,9 @@ class department_schedule(db.Model):
     """
     __tablename__ = 'department_schedule'
     department_schedule_id = db.Column(db.Integer, primary_key = True)
+    
+    start_time = db.Column(db.DateTime, default = datetime.utcnow, nullable = False)
+    end_time = db.Column(db.DateTime, default = datetime.utcnow, nullable = False)
     
     #relationships
     hc_department_id = db.Column(db.Integer, db.ForeignKey('health_center_department.hc_department_id'), 
